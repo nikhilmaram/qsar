@@ -1,0 +1,1 @@
+java -Xmx512m -cp "test.jar" ToxPredictor.Application.runTEST_From_Command_Line "Sample_MDL_SDfile.sdf" 1 "descriptors.txt" 99 -1

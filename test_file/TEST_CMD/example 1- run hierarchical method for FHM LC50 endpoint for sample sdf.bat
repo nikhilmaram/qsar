@@ -1,0 +1,1 @@
+ java -Xmx512m -cp "test.jar" ToxPredictor.Application.runTEST_From_Command_Line "Sample_MDL_SDfile.sdf" 1 "FHM_LC50_Hiearchical_Clustering_Method.txt" 1 1

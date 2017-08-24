@@ -1,0 +1,9 @@
+*.pyc
+__pycache__/
+*~
+*.job.e*
+*.job.o*
+*.csv
+*.txt
+*.json
+*.log

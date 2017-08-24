@@ -1,0 +1,1 @@
+java -Xmx512m -cp "test.jar" ToxPredictor.Application.runTEST_From_Command_Line "Sample_Smiles_List.smi" 2 "FP_Group_Contribution_method.txt" 23 5
