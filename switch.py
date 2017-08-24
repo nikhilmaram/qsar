@@ -438,7 +438,7 @@ def switch(smile,epi,vega,test,testopt=1):
     # return testJSON
 
 def save_test_result(outfile_path):
-    with open(outfile_path，'w') as fp_out：
+    with open(outfile_path,'w') as fp_out:
         with open(TEST_SAMPLE_RESULTS_JSON_FILEPATH,'r') as fp_in:
             fp_out.write(fp_in.read())
 
