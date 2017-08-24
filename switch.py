@@ -20,7 +20,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 EPI_SUITE_SAMPLE_RESULTS_JSON_FILEPATH= os.path.normpath(dir_path + "/episuite_file/epibat.json")
 VEGA_SAMPLE_RESULTS_JSON_FILEPATH = os.path.normpath(dir_path + "/vega_file/result_test.json")
 TEST_SAMPLE_RESULTS_JSON_FILEPATH =  os.path.normpath(os.path.join(dir_path + "/test_file/for_testing/temp_result2/test_results.json"))
-print(TEST_SAMPLE_RESULTS_JSON_FILEPATH)
+# print(TEST_SAMPLE_RESULTS_JSON_FILEPATH)
 DEFAULT_JSON_OUTPUT_FILEPATH =  os.path.normpath(dir_path + "/QSAR_summay_sample.json")
 def readJSON(jsonFilePath):
     with open(jsonFilePath) as jsonFile:
@@ -427,14 +427,21 @@ def switch(smile,epi,vega,test,testopt=1):
                     sort_keys=True, indent= 4, separators=(',', ': '))
 
 
+
     #os.system("python parsing.py")
 
     #epiJSON = readJSON(EPI_SUITE_SAMPLE_RESULTS_JSON_FILEPATH)
     #vegaJSON = readJSON(VEGA_SAMPLE_RESULTS_JSON_FILEPATH)
     print(smile)
-    testJSON = readJSON(TEST_SAMPLE_RESULTS_JSON_FILEPATH)
+    # testJSON = readJSON(TEST_SAMPLE_RESULTS_JSON_FILEPATH)
     # print(testJSON)
-    return testJSON
+    # return testJSON
+
+def save_test_result(outfile_path):
+    with open(outfile_path，'w') as fp_out：
+        with open(TEST_SAMPLE_RESULTS_JSON_FILEPATH,'r') as fp_in:
+            fp_out.write(fp_in.read())
+
     #outputFilePath = DEFAULT_JSON_OUTPUT_FILEPATH
     #qsar_dict = parse(epiJSON,vegaJSON,testJSON,outputFilePath)
     #print(qsar_dict)
@@ -443,8 +450,10 @@ def switch(smile,epi,vega,test,testopt=1):
 if __name__ == '__main__':
     #switch("C(Cl)Cl",True,True,False)
     #testopt, 1:all,0:density and orat
-    test_opt = 0
-    switch("CC",False,False,True,test_opt)
+    if len(sys.argv) == 7:
+        switch(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5])
+        save_test_result(sys.argv[6])
+    
     #switch("CC",False,True,False,test_opt)
     #switch("C(Cl)Cl",True,False,False,test_opt)
 
