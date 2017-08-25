@@ -451,7 +451,7 @@ if __name__ == '__main__':
     #switch("C(Cl)Cl",True,True,False)
     #testopt, 1:all,0:density and orat
     if len(sys.argv) == 7:
-        switch(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],sys.argv[5])
+        switch(sys.argv[1],eval(sys.argv[2]),eval(sys.argv[3]),eval(sys.argv[4]),sys.argv[5])
         save_test_result(sys.argv[6])
     
     #switch("CC",False,True,False,test_opt)
