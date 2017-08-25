@@ -423,10 +423,10 @@ def switch(smile,epi,vega,test,testopt=1):
         #output the result
         jsonOutputPath = os.path.normpath(os.path.join(dir_path,"test_file/for_testing/temp_result2/test_results.json"))
         with open(jsonOutputPath, "w") as outputFile:
-            json.dump(resultJsonObject, outputFile,
-                    sort_keys=True, indent= 4, separators=(',', ': '))
-
-
+            # json.dump(resultJsonObject, outputFile,
+            #         sort_keys=True, indent= 4, separators=(',', ': '))
+            # To save space on clusters, we will condense json on one line
+            json.dump(resultJsonObject, outputFile)
 
     #os.system("python parsing.py")
 
@@ -438,7 +438,8 @@ def switch(smile,epi,vega,test,testopt=1):
     # return testJSON
 
 def save_test_result(outfile_path):
-    with open(outfile_path,'w') as fp_out:
+    # append output json of current smiles to the large json of 500 smiles
+    with open(outfile_path,'a') as fp_out:
         with open(TEST_SAMPLE_RESULTS_JSON_FILEPATH,'r') as fp_in:
             fp_out.write(fp_in.read())
 
