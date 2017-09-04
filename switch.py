@@ -14,20 +14,18 @@ from parse import parse
 from vega_file import Call_VEGA
 import subprocess
 import re
+import uuid 
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
 
-EPI_SUITE_SAMPLE_RESULTS_JSON_FILEPATH= os.path.normpath(dir_path + "/episuite_file/epibat.json")
-VEGA_SAMPLE_RESULTS_JSON_FILEPATH = os.path.normpath(dir_path + "/vega_file/result_test.json")
-TEST_SAMPLE_RESULTS_JSON_FILEPATH =  os.path.normpath(os.path.join(dir_path + "/test_file/for_testing/temp_result2/test_results.json"))
-# print(TEST_SAMPLE_RESULTS_JSON_FILEPATH)
-DEFAULT_JSON_OUTPUT_FILEPATH =  os.path.normpath(dir_path + "/QSAR_summay_sample.json")
 def readJSON(jsonFilePath):
     with open(jsonFilePath) as jsonFile:
         jsonData = json.load(jsonFile)
         # pprint(jsonData)
     return jsonData
 
+def make_dir_if_necessary(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
 
 epinone=    {
         "BP  C  est": "N/A",
@@ -279,7 +277,7 @@ veganone={
         "Mutagenicity (Ames test) model (ISS) - prediction": "N/A",
         "Mutagenicity (Ames test) model (KNN/Read-Across) - ADI": "N/A",
         "Mutagenicity (Ames test) model (KNN/Read-Across) - assessment": "N/A",
-        "Mutagenicity (Ames test) model (KNN/Read-Across) - experimental value": "N/A",
+        "Mutagenicity (Ames test) model (KNN/Reasmilesd-Across) - experimental value": "N/A",
         "Mutagenicity (Ames test) model (KNN/Read-Across) - prediction": "N/A",
         "Mutagenicity (Ames test) model (SarPy/IRFMN) - ADI": "N/A",
         "Mutagenicity (Ames test) model (SarPy/IRFMN) - assessment": "N/A",
@@ -332,13 +330,25 @@ def change_vega_script(vega_script_path):
     # <singleTXT>/home/awsgui/Desktop/qsar/vega_file/result_test.txt</singleTXT>
     # <multipleTXT>/home/awsgui/Desktop/qsar/vega_file/results</multipleTXT>
 # smile: string, epi,vega,test: true and false switch
-def switch(smile,epi,vega,test,testopt=1):
+def switch(smile,epi,vega,test,UUID,testopt=1):
+    # give a "hash" for each run of qsar
+    UUID = str(uuid.uuid1())
+    
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+
+    EPI_SUITE_SAMPLE_RESULTS_JSON_FILEPATH= os.path.normpath(dir_path + "/episuite_file/epibat.json")
+    VEGA_SAMPLE_RESULTS_JSON_FILEPATH = os.path.normpath(dir_path + "/vega_file/result_test.json")
+    TEST_SAMPLE_RESULTS_JSON_FILEPATH =  os.path.normpath(os.path.join(dir_path + "/test_file/for_testing/temp_result2/" + UUID + "/test_results.json"))
+    DEFAULT_JSON_OUTPUT_FILEPATH =  os.path.normpath(dir_path + "/QSAR_summay_sample.json")
+
     print(dir_path)
     text_file = open(os.path.join(dir_path, "vega_file/source_test.txt"), "w")	
     text_file.write(smile+"\n")
     text_file.close()
+    
+    make_dir_if_necessary(os.path.join(dir_path, "test_file/for_testing/smiles"))
 
-    text_file = open(os.path.join(dir_path, "test_file/for_testing/smiles.txt"), "w")
+    text_file = open(os.path.join(dir_path, "test_file/for_testing/smiles","smiles_{0}.txt".format(UUID)), "w")
     text_file.write(smile+"\n")
     text_file.close()
 
@@ -399,14 +409,18 @@ def switch(smile,epi,vega,test,testopt=1):
 
     #test switch to turn on or off
     test_time = time.time()
+
     if test:
-        #print(test_time)
-        print(os.system("rm -rf {0}".format(os.path.normpath(dir_path+"/test_file/for_testing/temp_result2"))))
-        try:
-            subprocess.check_output("python " + os.path.normpath(dir_path + "/test_file/Call_TEST.py ")+str(testopt),
-                                 stderr=subprocess.STDOUT,shell=True)
-        except subprocess.CalledProcessError as exc:
-            print(exc.output)
+        # print(test_time)
+        # print(os.system("rm -rf {0}".format(os.path.normpath(dir_path+"/test_file/for_testing/temp_result2"))))
+        # try:
+        command = "python " + os.path.normpath(dir_path + "/test_file/Call_TEST.py ") \
+                  + str(testopt) + " " + str(UUID)
+        print(command)
+        subprocess.call(command,shell=True)
+        # subprocess.check_output(command, stderr=subprocess.STDOUT,shell=True)
+        # except subprocess.CalledProcessError as exc:
+        #     print(exc.output)
         print("{0} process used".format(cpu_count()))
         print("TEST used {0} seconds to complete.".format(time.time()-test_time))
     else:
@@ -451,10 +465,17 @@ def save_test_result(outfile_path):
 if __name__ == '__main__':
     #switch("C(Cl)Cl",True,True,False)
     #testopt, 1:all,0:density and orat
-    if len(sys.argv) == 7:
-        switch(sys.argv[1],eval(sys.argv[2]),eval(sys.argv[3]),eval(sys.argv[4]),sys.argv[5])
-        save_test_result(sys.argv[6])
+    # print(len(sys.argv),sys.argv)    
     
+    if len(sys.argv) == 7:
+        switch(sys.argv[1],eval(sys.argv[2]),eval(sys.argv[3]),eval(sys.argv[4]),sys.argv[5],sys.argv[6])
+        print("switch finished")
+
+    if len(sys.argv) == 8:
+        switch(sys.argv[1],eval(sys.argv[2]),eval(sys.argv[3]),eval(sys.argv[4]),sys.argv[5],sys.argv[6])
+        print("switch finished")
+        save_test_result(sys.argv[7])
+        # python switch.py CC False False True UUID 0
     #switch("CC",False,True,False,test_opt)
     #switch("C(Cl)Cl",True,False,False,test_opt)
 
