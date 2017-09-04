@@ -332,7 +332,7 @@ def change_vega_script(vega_script_path):
 # smile: string, epi,vega,test: true and false switch
 def switch(smile,epi,vega,test,UUID,testopt=1):
     # give a "hash" for each run of qsar
-    UUID = str(uuid.uuid1())
+    # UUID = str(uuid.uuid1())
     
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
