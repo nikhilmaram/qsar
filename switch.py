@@ -334,12 +334,7 @@ def switch(smile,epi,vega,test,UUID,testopt=1):
     # give a "hash" for each run of qsar
     # UUID = str(uuid.uuid1())
     
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-
-    EPI_SUITE_SAMPLE_RESULTS_JSON_FILEPATH= os.path.normpath(dir_path + "/episuite_file/epibat.json")
-    VEGA_SAMPLE_RESULTS_JSON_FILEPATH = os.path.normpath(dir_path + "/vega_file/result_test.json")
-    TEST_SAMPLE_RESULTS_JSON_FILEPATH =  os.path.normpath(os.path.join(dir_path + "/test_file/for_testing/temp_result2/" + UUID + "/test_results.json"))
-    DEFAULT_JSON_OUTPUT_FILEPATH =  os.path.normpath(dir_path + "/QSAR_summay_sample.json")
+    
 
     print(dir_path)
     text_file = open(os.path.join(dir_path, "vega_file/source_test.txt"), "w")	
@@ -447,7 +442,7 @@ def switch(smile,epi,vega,test,UUID,testopt=1):
     #epiJSON = readJSON(EPI_SUITE_SAMPLE_RESULTS_JSON_FILEPATH)
     #vegaJSON = readJSON(VEGA_SAMPLE_RESULTS_JSON_FILEPATH)
     print(smile)
-    # testJSON = readJSON(TEST_SAMPLE_RESULTS_JSON_FILEPATH)
+    #testJSON = readJSON(TEST_SAMPLE_RESULTS_JSON_FILEPATH)
     # print(testJSON)
     # return testJSON
 
@@ -466,7 +461,15 @@ if __name__ == '__main__':
     #switch("C(Cl)Cl",True,True,False)
     #testopt, 1:all,0:density and orat
     # print(len(sys.argv),sys.argv)    
-    
+    UUID = sys.argv[5]
+
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+
+    EPI_SUITE_SAMPLE_RESULTS_JSON_FILEPATH= os.path.normpath(dir_path + "/episuite_file/epibat.json")
+    VEGA_SAMPLE_RESULTS_JSON_FILEPATH = os.path.normpath(dir_path + "/vega_file/result_test.json")
+    TEST_SAMPLE_RESULTS_JSON_FILEPATH =  os.path.normpath(os.path.join(dir_path + "/test_file/for_testing/temp_result_" + UUID + "/test_results.json"))
+    DEFAULT_JSON_OUTPUT_FILEPATH =  os.path.normpath(dir_path + "/QSAR_summay_sample.json")
+
     if len(sys.argv) == 7:
         switch(sys.argv[1],eval(sys.argv[2]),eval(sys.argv[3]),eval(sys.argv[4]),sys.argv[5],sys.argv[6])
         print("switch finished")
