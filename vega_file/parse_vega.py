@@ -43,7 +43,10 @@ NUM_VEGA_ENDPOINT = 29	# number of endpoints support by the VEGA cmd;
 		}
 	]
 """
-def read_vega_result_toJSON(resultFilePath, jsonOutputPath="default"):
+def read_vega_result_toJSON(resultFilePath,jsonOutputPath="default"):
+	# dir_path = os.path.dirname(os.path.realpath(__file__))
+	# resultFilePath = os.path.join(dir_path,"vega_result.txt")
+
 	with open(resultFilePath, 'rb') as csvfile:
 		csvReader = csv.reader(csvfile, delimiter='\t')
 		rowCounter = 0
@@ -92,6 +95,6 @@ if __name__ == '__main__':
 	print "VEGA--Parsing"
 	
 	dir_path = os.path.dirname(os.path.realpath(__file__))
-	vegaResultFilePath = os.path.join(dir_path,"result_test.txt")
+	vegaResultFilePath = os.path.join(dir_path,"vega_result.txt")
 	read_vega_result_toJSON(vegaResultFilePath)
 #print readJSON("VEGA_summary_sample.json")
