@@ -77,13 +77,14 @@ PROCESSES_USED = cpu_count()
         }
     ]
 '''
-def TEST_batch_allEndpoints(testJarFilePath, inputFilePath, outputFolderPath, UUID,
+def TEST_batch_allEndpoints(inputFilePath, outputFolderPath,DEFAULT_flag="1",
                     fileType = DEFAULT_FILE_TYPE, endpointList = DEFAULT_ENDPOINT_LIST):
     if not os.path.exists(outputFolderPath):
             os.makedirs(outputFolderPath)
     folderPath = os.path.dirname(inputFilePath)
+    testJarFilePath = os.path.normpath(os.path.join(TEST_JAR_FOLDER_PATH, "TEST.jar"))
     # print folderPath   	# ./test_chemicals/
-    tempSMIFolder = "tempSMIFolder_{0}".format(UUID)
+    tempSMIFolder = "tempSMIFolder"#_{0}".format(UUID)
     numSmiles, smilesList = listToFiles(inputFilePath, os.path.join(folderPath, tempSMIFolder))
     testResultList = []
     for i in range(numSmiles):
@@ -92,9 +93,10 @@ def TEST_batch_allEndpoints(testJarFilePath, inputFilePath, outputFolderPath, UU
         if not os.path.exists(outputFolderPathIns):
             os.makedirs(outputFolderPathIns)
         TEST_allEndpoints(testJarFilePath, tempInputPath,
-                            outputFolderPathIns, fileType, endpointList)
+                            outputFolderPathIns, DEFAULT_flag ,fileType, endpointList)
         resultList = organizeResultToSingleCSV(outputFolderPathIns, 
                                     os.path.join(outputFolderPathIns, "summary.csv"),
+                                    DEFAULT_flag,
                                     endpointList)
         testResultList.append(resultList)
     writeJSONSummary(testResultList, smilesList, outputFolderPath)
@@ -112,7 +114,7 @@ def TEST_batch_allEndpoints(testJarFilePath, inputFilePath, outputFolderPath, UU
         java -Xmx512m -cp "test.jar" ToxPredictor.Application.runTEST_From_Command_Line
           \u201cSample_MDL_SDfile.sdf\u201d 1 \u201cresultsIGC50.txt\u201d 3 10
 """
-def TEST_allEndpoints(testJarFilePath, inputFilePath, outputFolderPath, 
+def TEST_allEndpoints(testJarFilePath, inputFilePath, outputFolderPath, DEFAULT_flag="1",
                         fileType = DEFAULT_FILE_TYPE, endpointList = DEFAULT_ENDPOINT_LIST):
     commands = []
     for endpoint in endpointList:
@@ -180,7 +182,7 @@ def listToFiles(inputListFilePath, outputFolder):
 
 
 def organizeResultToSingleCSV(smilesResultFolderPath, 
-                            summaryFilePath,
+                            summaryFilePath, DEFAULT_flag="1",
                             endpointList = DEFAULT_ENDPOINT_LIST):
     headerRowList = []
     dataRowList = []
@@ -277,4 +279,4 @@ if __name__ == "__main__":
         TEST_batch_allEndpoints(os.path.normpath(os.path.join(TEST_JAR_FOLDER_PATH, "TEST.jar")), 
                                 os.path.normpath(os.path.join(dir_path, "for_testing/smiles", "smiles_{0}.txt".format(sys.argv[2]))),
                                 os.path.normpath(os.path.join(dir_path, "for_testing", "temp_result_"+sys.argv[2])),
-                                sys.argv[2])
+                               )
