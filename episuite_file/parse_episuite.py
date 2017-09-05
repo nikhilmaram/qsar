@@ -1,4 +1,5 @@
 import csv, json, pprint, math
+import os, inspect
 
 
 # Not used in this file...
@@ -126,7 +127,13 @@ epi_Endpoints =[
 		}
 	]
 """
-def read_epi_result_toJson(resultFilePath, jsonOutputPath="default"):
+
+def read_epi_result_toJson(jsonOutputPath="default"):
+	class_directory = os.path.dirname(os.path.abspath(
+		inspect.getfile(inspect.currentframe()))
+	)
+	resultFilePath = os.path.join(class_directory, "epibat.out")
+
 	# read line by line and store in a list
 	ccccc=0
 	smilebyline=[]
@@ -827,8 +834,6 @@ def read_epi_result_toJson(resultFilePath, jsonOutputPath="default"):
 		jsonOutputPath = resultFilePath[:-3]+"json"
 	with open(jsonOutputPath, "w") as outputFile:
 		json.dump(chemicals, outputFile, sort_keys=True, indent= 4, separators=(',', ': '))
-
-
 
 
 """
