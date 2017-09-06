@@ -360,7 +360,7 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
         epi_smiles.write("CC\n"+smiles+"\n")
         epi_smiles.close()
         # modify sikulix script and copy to temp folder
-        with open(os.path.abspath("./sikuli_scripts/epi_script.sikuli")) as sikuli_in:
+        with open(os.path.abspath("./sikuli_scripts/epi_script.sikuli/epi_script.py")) as sikuli_in:
             sikuli_template = sikuli_in.read()
             # modify input file path (history/md5/epi_smiles) for episuite 
             sikuli_template = re.sub(r'\r\'Z:\\home\\awsgui\\Desktop\\qsar\\episuite_file\\epi_smiles.txt',
@@ -441,7 +441,7 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
         epi_time = time.time()
         # This command assumes a symlink to runsikulix have been created
         os.system("{0} -r {1}".format(os.path.join(DIR_PATH,"runsikulix"),
-                                      os.path.join(DIR_PATH,"sikuli_scripts/epi_script.sikuli/epi_script.py")))
+                                      os.path.join(DIR_PATH,"sikuli_scripts/epi_script.sikuli")))
         
         read_epi_result_toJson(PATH_DICT["EPI_SCRIPT_PATH"],
                                os.path.join(RESULT_JSON_FOLDER,'epi_result.json'))
