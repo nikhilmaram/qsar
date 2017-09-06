@@ -371,7 +371,7 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
                                      epi_file_folder.replace("/home","Z:\\home").replace("/","\\"),
                                      sikuli_template)
             # save modified sikuli script to temp folder
-            EPI_SCRIPT_PATH = os.path.join(EPI_SMILES_PATH,'epi_script.sikuli')
+            EPI_SCRIPT_PATH = os.path.join(epi_file_folder,'epi_script.py')
             with open(EPI_SCRIPT_PATH,'w') as sikuli_out:
                 sikuli_out.write(sikuli_template)
 
