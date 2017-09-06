@@ -128,21 +128,21 @@ epi_Endpoints =[
 	]
 """
 
-def read_epi_result_toJson(jsonOutputPath="default"):
-	class_directory = os.path.dirname(os.path.abspath(
-		inspect.getfile(inspect.currentframe()))
-	)
-	resultFilePath = os.path.join(class_directory, "epibat.out")
+def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
+	# class_directory = os.path.dirname(os.path.abspath(
+	# 	inspect.getfile(inspect.currentframe()))
+	# )
+	# resultFilePath = os.path.join(class_directory, "epibat.out")
 
 	# read line by line and store in a list
-	ccccc=0
-	smilebyline=[]
-	smilethere=[]
-	with open("source_test.txt") as of:
-		smilebyline=of.read().splitlines()
-	for i in smilebyline:
-		ccccc=ccccc+1
-	print(ccccc)
+	# ccccc=0
+	# smilebyline=[]
+	# smilethere=[]
+	# with open("source_test.txt") as of:
+	# 	smilebyline=of.read().splitlines()
+	# for i in smilebyline:
+	# 	ccccc=ccccc+1
+	# print(ccccc)
 
 
 	fileByLine = []
