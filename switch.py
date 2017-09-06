@@ -18,7 +18,7 @@ import uuid
 import hashlib
 from episuite_file.parse_episuite import read_epi_result_toJson
 from vega_file.parse_vega import read_vega_result_toJSON
-from test_file.Call_TEST import TEST_batch_allEndpoints
+from test_file.Call_TEST import TEST_batch_allEndpoints, readTESTResult
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -339,23 +339,41 @@ def change_vega_script(vega_script_template,vega_file_folder,vega_script_path):
     # <multipleTXT>/home/awsgui/Desktop/qsar/vega_file/results</multipleTXT>
 
 def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
+    EPI_SCRIPT_PATH = ""
+    EPI_RESULT_PATH = ""
     VEGA_SCRIPT_PATH = ""
     VEGA_RESULT_PATH = ""
     TEST_SMILES_PATH = ""
     TEST_RESULT_PATH = ""
+
     '''
     Our episuite script always runs in batch mode. In batch mode, we need
     feed at least 1 'correct' smiles to episuite so that it can generate output.
     Thus, to handle potential 'wrong' smiles, we put a place holder in epi_smiles.txt
     '''
-    if test:
+    if epi:
         # serialize smiles for EPI-suite
-        epi_file_path = os.path.join(temp_dir_path, "episuite_file")
-        make_dir_if_necessary(epi_file_path)
-        epi_smiles = open(os.path.join(epi_file_path,"epi_smiles.txt"), "w")
+        epi_file_folder = os.path.join(temp_dir_path, "episuite_file")
+        make_dir_if_necessary(epi_file_folder)
+        EPI_SMILES_PATH = os.path.join(epi_file_folder,"epi_smiles.txt")
+        epi_smiles = open(EPI_SMILES_PATH, "w")
         epi_smiles.write("CC\n"+smiles+"\n")
         epi_smiles.close()
-        # modify sikulix script
+        # modify sikulix script and copy to temp folder
+        with open(os.path.abspath("./sikuli_scripts/epi_script.sikuli")) as sikuli_in:
+            sikuli_template = sikuli_in.read()
+            # modify input file path (history/md5/epi_smiles) for episuite 
+            sikuli_template = re.sub(r'\r\'Z:\\home\\awsgui\\Desktop\\qsar\\episuite_file\\epi_smiles.txt',
+                                     EPI_SMILES_PATH.replace("/home","Z:\\home").replace("/","\\"),
+                                     sikuli_template)
+            # modify output file path (history/md5/epibat.out) for episuite 
+            sikuli_template = re.sub(r'\r\'Z:\\home\\awsgui\\Desktop\\qsar\\episuite_file\\epibat.out\'',
+                                     epi_file_folder.replace("/home","Z:\\home").replace("/","\\"),
+                                     sikuli_template)
+            # save modified sikuli script to temp folder
+            EPI_SCRIPT_PATH = os.path.join(EPI_SMILES_PATH,'epi_script.sikuli')
+            with open(EPI_SCRIPT_PATH,'w') as sikuli_out:
+                sikuli_out.write(sikuli_template)
 
     '''
         We could let epi, vega and test read the same input file. However,
@@ -386,7 +404,9 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
         test_smiles.write(smiles+"\n")
         test_smiles.close()
 
-    return {"VEGA_SCRIPT_PATH":VEGA_SCRIPT_PATH,
+    return {"EPI_SCRIPT_PATH":EPI_SCRIPT_PATH,
+            "EPI_RESULT_PATH":EPI_RESULT_PATH,
+            "VEGA_SCRIPT_PATH":VEGA_SCRIPT_PATH,
             "VEGA_RESULT_PATH":VEGA_RESULT_PATH,
             "TEST_SMILES_PATH":TEST_SMILES_PATH,
             "TEST_RESULT_PATH":TEST_RESULT_PATH}
@@ -422,7 +442,9 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
         # This command assumes a symlink to runsikulix have been created
         os.system("{0} -r {1}".format(os.path.join(DIR_PATH,"runsikulix"),
                                       os.path.join(DIR_PATH,"sikuli_scripts/epi_script.sikuli")))
-        read_epi_result_toJson(EPI_SUITE_SAMPLE_RESULTS_JSON_FILEPATH)
+        
+        read_epi_result_toJson(PATH_DICT["EPI_SCRIPT_PATH"],
+                               os.path.join(RESULT_JSON_FOLDER,'epi_result.json'))
         # os.system("python " +DIR_PATH+ "/episuite_file/parse_episuite.py")
         #os.system("rm "+dir_path+"/episuite_file/epibat.out")
         print("EPI used {} seconds to complete.".format(time.time()-epi_time))
@@ -448,7 +470,8 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
                                         .format(DIR_PATH,PATH_DICT['VEGA_SCRIPT_PATH']))
         # change the hard coded path in vega script
         os.system("java -jar " + java_command)
-        read_vega_result_toJSON(PATH_DICT["VEGA_RESULT_PATH"],os.path.join(RESULT_JSON_FOLDER,'vega_result.json'))
+        read_vega_result_toJSON(PATH_DICT["VEGA_RESULT_PATH"],
+                                os.path.join(RESULT_JSON_FOLDER,'vega_result.json'))
         # os.system("python " + os.path.normpath(DIR_PATH+ "/vega_file/parse_vega.py"))
         print("VEGA used {} seconds to complete.".format(time.time()-vega_time))
         #print("{} process used".format(cpu_count()))
