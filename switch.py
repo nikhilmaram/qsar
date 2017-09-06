@@ -457,7 +457,7 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
         os.system("{0} -r {1}".format(os.path.join(DIR_PATH,"sikulix/runsikulix"),
                                       os.path.join(TEMP_DIR_PATH,"episuite_file","epi_script.sikuli")))
         
-        read_epi_result_toJson(PATH_DICT["EPI_SCRIPT_PATH"],
+        read_epi_result_toJson(PATH_DICT["EPI_RESULT_PATH"],
                                os.path.join(RESULT_JSON_FOLDER,'epi_result.json'))
         # os.system("python " +DIR_PATH+ "/episuite_file/parse_episuite.py")
         #os.system("rm "+dir_path+"/episuite_file/epibat.out")
@@ -522,7 +522,7 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
         print("{0} process used".format(cpu_count()))
         print("TEST used {0} seconds to complete.".format(time.time()-test_time))
     else:
-    #create the empty test component if switch is off
+        #create the empty test component if switch is off
         currenttest={}
 
         for a in TEST_Headers:
