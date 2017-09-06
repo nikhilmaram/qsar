@@ -361,34 +361,21 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
         epi_smiles.close()
         # modify sikulix script and copy to temp folder
         with open(os.path.abspath("./sikuli_scripts/epi_script.sikuli/epi_script.py")) as sikuli_in:
+            # symlink pictures to temp folder
+            EPI_SCRIPT_PATH = os.path.join(epi_file_folder,'epi_script.sikuli','epi_script.py')
+            os.system("ln -s {0}*.png {1}".format("./sikuli_scripts/epi_script.sikuli/",EPI_SCRIPT_PATH))
             sikuli_template = sikuli_in.read()
-	    #print(EPI_SMILES_PATH.replace("/home","Z:\\home").replace("/","\\"),"\n")
-	    #print(EPI_SMILES_PATH)
-            # modify input file path (history/md5/epi_smiles) for episuite 
-            #sikuli_template = re.sub(r'smiles_location = .*?\\n',
-            #                         EPI_SMILES_PATH.replace("/","\\"),
-            #                         sikuli_template)
-            #print(re.findall(r'smiles_location = .*',sikuli_template))
             escaped = "smiles_location = r'Z:" + EPI_SMILES_PATH.replace("/","\\") + "'"
-            #print(re.sub(r'smiles_location = r\'Z:\home\awsgui\Desktop\qsar\episuite_file\epi_smiles.txt',escaped,sikuli_template))
-            #print(sikuli_template)
-            #print(escaped)
             orig_smiles_location_str = "smiles_location = r'Z:\home\\awsgui\Desktop\qsar\episuite_file\epi_smiles.txt'"
-            #print(orig_smiles_location_str)
             sikuli_template = sikuli_template.replace(orig_smiles_location_str,escaped)
-            
             
             # modify output file path (history/md5/epibat.out) for episuite 
             orig_epi_out_path_str = "Z:\home\\awsgui\Desktop\qsar\episuite_file\epibat.out"
-            #print(orig_epi_out_path_str)
             epi_out_win_path = os.path.join(epi_file_folder,"epibat.out").replace("/home","Z:\\home").replace("/","\\")
             sikuli_template = sikuli_template.replace(orig_epi_out_path_str,epi_out_win_path)
-            #sikuli_template = re.sub("Z:\home\\awsgui\Desktop\qsar\episuite_file\epibat.out",
-            #                         epi_file_folder.replace("/home","Z:\\home").replace("/","\\"),
-            #                         sikuli_template)
             
             # save modified sikuli script to temp folder
-            EPI_SCRIPT_PATH = os.path.join(epi_file_folder,'epi_script.sikuli','epi_script.py')
+
             with open(EPI_SCRIPT_PATH,'w') as sikuli_out:
                 sikuli_out.write(sikuli_template)
 
