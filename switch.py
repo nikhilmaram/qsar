@@ -441,7 +441,7 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
         epi_time = time.time()
         # This command assumes a symlink to runsikulix have been created
         os.system("{0} -r {1}".format(os.path.join(DIR_PATH,"sikulix/runsikulix"),
-                                      os.path.join(DIR_PATH,"sikuli_scripts/epi_script.sikuli")))
+                                      os.path.join(TEMP_DIR_PATH,"epi_file","epi_script.sikuli")))
         
         read_epi_result_toJson(PATH_DICT["EPI_SCRIPT_PATH"],
                                os.path.join(RESULT_JSON_FOLDER,'epi_result.json'))
@@ -459,13 +459,13 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
         with open(jsonOutputPath, "w") as outputFile:
             json.dump(resultJsonObject, outputFile,
                     sort_keys=True, indent= 4, separators=(',', ': '))
-    
+
     #vega switch to turn on or off
     if vega:
         vega_time = time.time()
         #os.system("java -jar ./vega_file/VEGA_CMD/VEGA-CLI.jar -script ./vega_file/script_allModule_test")
         # vega_script_path = os.path.normpath(DIR_PATH + "/vega_file/script_shaoyi")
-        # change_vega_script(vega_script_path)    
+        # change_vega_script(vega_script_path)
         java_command = os.path.normpath("{0}/vega_file/VEGA_CMD/VEGA-CLI.jar -script {1}"
                                         .format(DIR_PATH,PATH_DICT['VEGA_SCRIPT_PATH']))
         # change the hard coded path in vega script
