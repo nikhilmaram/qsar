@@ -408,7 +408,7 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
     # create folder ./history/md5/test_file
     test_file_path = os.path.join(temp_dir_path, "test_file")
     make_dir_if_necessary(test_file_path)
-    TEST_RESULT_PATH = test_file_path
+    TEST_RESULT_PATH = os.path.join(temp_dir_path,'json')
     
     if test:
         # serialize smiles for TEST
