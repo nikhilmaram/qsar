@@ -334,7 +334,7 @@ def change_vega_script(vega_script_template,vega_file_folder,vega_script_path):
         f.write("".join(script))
     
     return vega_singel_result_path
-    # print("script changed")
+
     # <singleTXT>/home/awsgui/Desktop/qsar/vega_file/result_test.txt</singleTXT>
     # <multipleTXT>/home/awsgui/Desktop/qsar/vega_file/results</multipleTXT>
 
@@ -360,15 +360,18 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
         epi_smiles = open(EPI_SMILES_PATH, "w")
         epi_smiles.write("CC\n"+smiles+"\n")
         epi_smiles.close()
+
         # modify sikulix script and copy to temp folder
         with open(os.path.abspath("./sikuli_scripts/epi_script.sikuli/epi_script.py")) as sikuli_in:
-            # symlink pictures to temp folder
+            # create .sikuli script folder
             epi_script_folder = os.path.join(epi_file_folder,'epi_script.sikuli')
-	    make_dir_if_necessary(epi_script_folder)
-	    EPI_SCRIPT_PATH = os.path.join(epi_script_folder,'epi_script.py')
-	    symlink_command = "ln -s {0}/*.png {1}".format(os.path.abspath("./sikuli_scripts/epi_script.sikuli/"),epi_script_folder)
-	    print(symlink_command)
+            make_dir_if_necessary(epi_script_folder)
+            EPI_SCRIPT_PATH = os.path.join(epi_script_folder,'epi_script.py')
+            # symlink pictures to temp folder
+            symlink_command = "ln -s {0}/*.png {1}".format(os.path.abspath("./sikuli_scripts/epi_script.sikuli/"),epi_script_folder)
             os.system(symlink_command)
+
+            # modify input file (epi_smiles.txt) path in sikuli script template
             sikuli_template = sikuli_in.read()
             escaped = "smiles_location = r'Z:" + EPI_SMILES_PATH.replace("/","\\") + "'"
             orig_smiles_location_str = "smiles_location = r'Z:\home\\awsgui\Desktop\qsar\episuite_file\epi_smiles.txt'"
@@ -381,7 +384,6 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
             sikuli_template = sikuli_template.replace(orig_epi_out_path_str,epi_out_win_path)
             
             # save modified sikuli script to temp folder
-
             with open(EPI_SCRIPT_PATH,'w') as sikuli_out:
                 sikuli_out.write(sikuli_template)
 
@@ -507,18 +509,7 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
     test_time = time.time()
 
     if test:
-        # print(test_time)
-        # print(os.system("rm -rf {0}".format(os.path.normpath(DIR_PATH+"/test_file/for_testing/temp_result2"))))
-        # try:
-        # command = "python " + os.path.normpath(DIR_PATH + "/test_file/Call_TEST.py ") \
-        #           + str(testopt)
         TEST_batch_allEndpoints(PATH_DICT["TEST_SMILES_PATH"],PATH_DICT["TEST_RESULT_PATH"],testopt)
-        # print(command)
-        # # subprocess.call(command,shell=True)
-        # try:
-        #     print(subprocess.check_output(command, stderr=subprocess.STDOUT,shell=True))
-        # except subprocess.CalledProcessError as exc:
-        #     print(exc.output)
         print("{0} process used".format(cpu_count()))
         print("TEST used {0} seconds to complete.".format(time.time()-test_time))
     else:
@@ -535,23 +526,15 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
         #output the result
         jsonOutputPath = os.path.normpath(os.path.join(PATH_DICT["TEST_RESULT_PATH"],"test_result.json"))#os.path.join(DIR_PATH,"test_file/for_testing/temp_result2/test_results.json"))
         with open(jsonOutputPath, "w") as outputFile:
-            # json.dump(resultJsonObject, outputFile,
-            #         sort_keys=True, indent= 4, separators=(',', ': '))
+            json.dump(resultJsonObject, outputFile,
+                    sort_keys=True, indent= 4, separators=(',', ': '))
             # To save space on clusters, we will condense json on one line
-            json.dump(resultJsonObject, outputFile)
+            # json.dump(resultJsonObject, outputFile)
 
-    #os.system("python parsing.py")
-
-    #epiJSON = readJSON(EPI_SUITE_SAMPLE_RESULTS_JSON_FILEPATH)
-    #vegaJSON = readJSON(VEGA_SAMPLE_RESULTS_JSON_FILEPATH)
     print(smiles)
-    # testJSON = readJSON(TEST_SAMPLE_RESULTS_JSON_FILEPATH)
-    # print(testJSON)
-    # return testJSON
 
     #outputFilePath = DEFAULT_JSON_OUTPUT_FILEPATH
     #qsar_dict = parse(epiJSON,vegaJSON,testJSON,outputFilePath)
-    #print(qsar_dict)
     #return qsar_dict
 
 def save_test_result(outfile_path):
@@ -560,19 +543,15 @@ def save_test_result(outfile_path):
         with open(TEST_SAMPLE_RESULTS_JSON_FILEPATH,'r') as fp_in:
             fp_out.write(fp_in.read())
 
-def save_epi_result(outfile_path):
-    with open(outfile_path,'a') as fp_out:
-        with open(EPI_SUITE_SAMPLE_RESULTS_JSON_FILEPATH,'r') as fp_in:
-            fp_out.write(fp_in.read())        
+# def save_epi_result(outfile_path):
+#     with open(outfile_path,'a') as fp_out:
+#         with open(EPI_SUITE_SAMPLE_RESULTS_JSON_FILEPATH,'r') as fp_in:
+#             fp_out.write(fp_in.read())        
 
 if __name__ == '__main__':
     #switch("C(Cl)Cl",True,True,False)
     #testopt, 1:all,0:density and orat
-    # print(len(sys.argv),sys.argv)    
-    # UUID = sys.argv[5]
-
-
-    EPI_SUITE_SAMPLE_RESULTS_JSON_FILEPATH = os.path.normpath(DIR_PATH + "/episuite_file/epibat.json")
+    # EPI_SUITE_SAMPLE_RESULTS_JSON_FILEPATH = os.path.normpath(DIR_PATH + "/episuite_file/epibat.json")
     # VEGA_SAMPLE_RESULTS_JSON_FILEPATH = os.path.normpath(DIR_PATH + "/vega_file/result_test.json")
     # TEST_SAMPLE_RESULTS_JSON_FILEPATH =  os.path.normpath(os.path.join(DIR_PATH + "/test_file/for_testing/temp_result_" + UUID + "/test_results.json"))
     # DEFAULT_JSON_OUTPUT_FILEPATH =  os.path.normpath(DIR_PATH + "/QSAR_summay_sample.json")
