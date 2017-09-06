@@ -441,7 +441,7 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
         epi_time = time.time()
         # This command assumes a symlink to runsikulix have been created
         os.system("{0} -r {1}".format(os.path.join(DIR_PATH,"runsikulix"),
-                                      os.path.join(DIR_PATH,"sikuli_scripts/epi_script.sikuli")))
+                                      os.path.join(DIR_PATH,"sikuli_scripts/epi_script.sikuli/epi_script.py")))
         
         read_epi_result_toJson(PATH_DICT["EPI_SCRIPT_PATH"],
                                os.path.join(RESULT_JSON_FOLDER,'epi_result.json'))
