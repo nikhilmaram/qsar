@@ -362,8 +362,12 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
         # modify sikulix script and copy to temp folder
         with open(os.path.abspath("./sikuli_scripts/epi_script.sikuli/epi_script.py")) as sikuli_in:
             # symlink pictures to temp folder
-            EPI_SCRIPT_PATH = os.path.join(epi_file_folder,'epi_script.sikuli','epi_script.py')
-            os.system("ln -s {0}*.png {1}".format("./sikuli_scripts/epi_script.sikuli/",EPI_SCRIPT_PATH))
+            epi_script_folder = os.path.join(epi_file_folder,'epi_script.sikuli')
+	    make_dir_if_necessary(epi_script_folder)
+	    EPI_SCRIPT_PATH = os.path.join(epi_script_folder,'epi_script.py')
+	    symlink_command = "ln -s {0}/*.png {1}".format(os.path.abspath("./sikuli_scripts/epi_script.sikuli/"),epi_script_folder)
+	    print(symlink_command)
+            os.system(symlink_command)
             sikuli_template = sikuli_in.read()
             escaped = "smiles_location = r'Z:" + EPI_SMILES_PATH.replace("/","\\") + "'"
             orig_smiles_location_str = "smiles_location = r'Z:\home\\awsgui\Desktop\qsar\episuite_file\epi_smiles.txt'"
