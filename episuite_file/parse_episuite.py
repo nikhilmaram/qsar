@@ -129,20 +129,10 @@ epi_Endpoints =[
 """
 
 def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
-	# class_directory = os.path.dirname(os.path.abspath(
-	# 	inspect.getfile(inspect.currentframe()))
-	# )
-	# resultFilePath = os.path.join(class_directory, "epibat.out")
-
 	# read line by line and store in a list
-	# ccccc=0
-	# smilebyline=[]
-	# smilethere=[]
-	# with open("source_test.txt") as of:
-	# 	smilebyline=of.read().splitlines()
-	# for i in smilebyline:
-	# 	ccccc=ccccc+1
-	# print(ccccc)
+	ccccc=0
+	smilebyline=[]
+	smilethere=[]
 
 
 	fileByLine = []
@@ -157,14 +147,18 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 	for i in range(len(indexesOfRecords)-1):
 		# check records one by one
         # record the line count to match each endpoint with the values in output file
-		linesForOneRecord = fileByLine[indexesOfRecords[i]:indexesOfRecords[i+1]-6]
+		linesForOneRecord = fileByLine[indexesOfRecords[i]:indexesOfRecords[i+1]-1]
 		currentChemical = {}
 		lineCounter = 0
 		for line in linesForOneRecord:
 			if "INCOMPATIBLE SMILES" in line:
 				tempsmile=line[line.index(":")+1:].strip()
-				currentChemical["SMILES"] = tempSmiles
-				break
+				currentChemical["SMILES"] = tempsmile
+			elif "SMILES NOTATION PROBLEM" in line:
+				tempsmile=line[line.index(":")+1:].strip()
+				print("-------------")
+				print(tempsmile)
+				currentChemical["SMILES"] = tempsmile
 			elif "SMILES :" in line:
 				if "SMILES" not in currentChemical:		
 					tempSmiles = line[line.index(":")+1:].strip()
@@ -183,73 +177,87 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 				i=lineCounter+2
 				thisline=linesForOneRecord[i]
 				while "==============================="	not in thisline:
-					if "Exp Log P:" in thisline:
-						currentChemical["kOctWater  unitless  exp"] = math.pow(10, float(thisline[thisline.index(":")+1:].strip()))
-					elif "Log Kow(version 1.68 estimate):" in thisline:
-						currentChemical["kOctWater  unitless  est"] = math.pow(10, float(thisline[thisline.index(":")+1:].strip()))
+					try:
+						if "Exp Log P:" in thisline:
+							currentChemical["kOctWater  unitless  exp"] = math.pow(10, float(thisline[thisline.index(":")+1:].strip()))
+						elif "Log Kow(version 1.68 estimate):" in thisline:
+							currentChemical["kOctWater  unitless  est"] = math.pow(10, float(thisline[thisline.index(":")+1:].strip()))
+					except Exception:
+						pass
 					i=i+1
 					thisline=linesForOneRecord[i]
 			elif "MPBPWIN (v1.43) Program Results:"	in line:
 				i=lineCounter+2
 				thisline=linesForOneRecord[i]
 				while "------------------------ SUMMARY MPBPWIN v1.43 --------------------"	not in thisline:
-					if "Exp MP (deg C):" in thisline:
-						if "---" in thisline:
-							currentChemical["MP  C  exp"] = "N/A"
-						elif "dec" in thisline:
-							currentChemical["MP  C  exp"] = str(float(thisline[thisline.index(":")+1:thisline.index("dec")].strip()))
-						else:
-							currentChemical["MP  C  exp"] = str(float(thisline[thisline.index(":")+1:].strip()))
-					elif "Exp BP (deg C):" in thisline:
-						if "---" in thisline:
-							currentChemical["BP  C  exp"] = "N/A"
-						elif "@" in thisline:
-							currentChemical["BP  C  exp"] = str(float(thisline[thisline.index(":")+1:thisline.index("@")].strip()))
-						else:
-							currentChemical["BP  C  exp"] = str(float(thisline[thisline.index(":")+1:].strip()))
-					elif "Exp VP (mm Hg):" in thisline:
-						if "---" in thisline:
-							currentChemical["VP  mmHg  exp"] = "N/A"
-						elif "(e" in thisline:
-							currentChemical["VP  mmHg  exp"] = str(float(thisline[thisline.index(":")+1:thisline.index("(e")].strip()))
-						else:
-							currentChemical["VP  mmHg  exp"] = str(float(thisline[thisline.index(":")+1:].strip()))
+					try:
+						if "Exp MP (deg C):" in thisline:
+							if "---" in thisline:
+								currentChemical["MP  C  exp"] = "N/A"
+							elif "dec" in thisline:
+								currentChemical["MP  C  exp"] = str(float(thisline[thisline.index(":")+1:thisline.index("dec")].strip()))
+							else:
+								currentChemical["MP  C  exp"] = str(float(thisline[thisline.index(":")+1:].strip()))
+						elif "Exp BP (deg C):" in thisline:
+							if "---" in thisline:
+								currentChemical["BP  C  exp"] = "N/A"
+							elif "@" in thisline:
+								currentChemical["BP  C  exp"] = str(float(thisline[thisline.index(":")+1:thisline.index("@")].strip()))
+							else:
+								currentChemical["BP  C  exp"] = str(float(thisline[thisline.index(":")+1:].strip()))
+						elif "Exp VP (mm Hg):" in thisline:
+							if "---" in thisline:
+								currentChemical["VP  mmHg  exp"] = "N/A"
+							elif "(e" in thisline:
+								currentChemical["VP  mmHg  exp"] = str(float(thisline[thisline.index(":")+1:thisline.index("(e")].strip()))
+							else:
+								currentChemical["VP  mmHg  exp"] = str(float(thisline[thisline.index(":")+1:].strip()))
+					except Exception:
+						pass
 					i=i+1
 					thisline=linesForOneRecord[i]
 
 				while "========================================" not in thisline:
-					if "Selected MP:" in thisline:
-						currentChemical["MP  C  est"] = str(float(thisline[thisline.index(":")+1:thisline.index("deg")].strip()))
-					elif "Boiling Point:" in thisline:
-						currentChemical["BP  C  est"] = str(float(thisline[thisline.index(":")+1:thisline.index("deg")].strip()))
-					elif "Selected VP:" in thisline:
-						currentChemical["VP  mmHg  est"] = str(float(thisline[thisline.index(":")+1:thisline.index("mm")].strip()))
+					try:
+						if "Selected MP:" in thisline:
+							currentChemical["MP  C  est"] = str(float(thisline[thisline.index(":")+1:thisline.index("deg")].strip()))
+						elif "Boiling Point:" in thisline:
+							currentChemical["BP  C  est"] = str(float(thisline[thisline.index(":")+1:thisline.index("deg")].strip()))
+						elif "Selected VP:" in thisline:
+							currentChemical["VP  mmHg  est"] = str(float(thisline[thisline.index(":")+1:thisline.index("mm")].strip()))
+					except Exception:
+						pass
 					i=i+1
 					thisline=linesForOneRecord[i]		
 			elif "Water Sol from Kow (WSKOW v1.42) Results:" in line:
 				i=lineCounter+2
 				thisline=linesForOneRecord[i]
 				while "------ WSKOW v1.42 Results -------"	not in thisline:
+					try:
 					# print("ws")
-					if "Water Sol:" in thisline:
-						currentChemical["WS  mg/L  WSKOW  est"] = thisline[thisline.index(":")+1:thisline.index("mg/L")].strip()
+						if "Water Sol:" in thisline:
+							currentChemical["WS  mg/L  WSKOW  est"] = thisline[thisline.index(":")+1:thisline.index("mg/L")].strip()
 						# print(currentChemical["WS  mg/L  est"])
-					elif "Exp WSol :" in thisline:
-						currentChemical["WS  mg/L  WSKOW  exp"] = thisline[thisline.index(":")+1:thisline.index("mg/L")].strip()
+						elif "Exp WSol :" in thisline:
+							currentChemical["WS  mg/L  WSKOW  exp"] = thisline[thisline.index(":")+1:thisline.index("mg/L")].strip()
 						# print(currentChemical["WS  mg/L  exp"])
+					except Exception:
+						pass
 					i=i+1
 					thisline=linesForOneRecord[i]
 			elif "WATERNT Program (v1.01) Results:" in line:
 				i=lineCounter+2
 				thisline=linesForOneRecord[i]
 				while "========================="  not in thisline:
-					# print("ws")
-					if "Water Sol (v1.01 est):" in thisline:
-						currentChemical["WS  mg/L  WATERNT  est"] = thisline[thisline.index(":")+1:thisline.index("mg/L")].strip()
-						# print(currentChemical["WS  mg/L  est"])
-					elif "Exp WSol :" in thisline:
-						currentChemical["WS  mg/L  WATERNT  exp"] = thisline[thisline.index(":")+1:thisline.index("mg/L")].strip()
-						# print(currentChemical["WS  mg/L  exp"])
+					try:
+						if "Water Sol (v1.01 est):" in thisline:
+							currentChemical["WS  mg/L  WATERNT  est"] = thisline[thisline.index(":")+1:thisline.index("mg/L")].strip()
+							# print(currentChemical["WS  mg/L  est"])
+						elif "Exp WSol :" in thisline:
+							currentChemical["WS  mg/L  WATERNT  exp"] = thisline[thisline.index(":")+1:thisline.index("mg/L")].strip()
+							# print(currentChemical["WS  mg/L  exp"])
+					except Exception:
+						pass
 					i=i+1
 					thisline=linesForOneRecord[i]
 			elif "ECOSAR v1.11 Class-specific Estimations" in line:
@@ -263,49 +271,52 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 				e6=-1
 
 				while "----------------------------"  not in ttline:
-					if "Daphnid" in ttline:
-						if "LC50" in ttline and "48-hr" in ttline:
-							currentChemical["dmLC50_48hr_ecosar  mg/L"]=ttline[66:77].strip()
-							e2=float(ttline[66:77].strip())
-						if "ChV" in ttline and "-hr" not in ttline:
-							currentChemical["dmChV_ecosar  mg/L"]=ttline[66:77].strip()
-							e5=float(ttline[66:77].strip())
-
-					if "Green Algae" in ttline:
-						if "EC50" in ttline and "96-hr" in ttline:
-							currentChemical["algaeEC50_96hr_ecosar  mg/L"]=ttline[66:77].strip()
-							e3=float(ttline[66:77].strip())
-
-					if "Fish" in ttline:
-						if "(SW)" in ttline:
-							if "LC50" in ttline and "96-hr" in ttline:
-								currentChemical["fishLC50SW_96hr_ecosar  mg/L"]=ttline[66:77].strip()
+					try:
+						if "Daphnid" in ttline:
+							if "LC50" in ttline and "48-hr" in ttline:
+								currentChemical["dmLC50_48hr_ecosar  mg/L"]=ttline[66:77].strip()
+								e2=float(ttline[66:77].strip())
 							if "ChV" in ttline and "-hr" not in ttline:
-								currentChemical["fishChVSW_ecosar  mg/L"]=ttline[66:77].strip()##############should be??
-						else:
+								currentChemical["dmChV_ecosar  mg/L"]=ttline[66:77].strip()
+								e5=float(ttline[66:77].strip())
+
+						if "Green Algae" in ttline:
+							if "EC50" in ttline and "96-hr" in ttline:
+								currentChemical["algaeEC50_96hr_ecosar  mg/L"]=ttline[66:77].strip()
+								e3=float(ttline[66:77].strip())
+
+						if "Fish" in ttline:
+							if "(SW)" in ttline:
+								if "LC50" in ttline and "96-hr" in ttline:
+									currentChemical["fishLC50SW_96hr_ecosar  mg/L"]=ttline[66:77].strip()
+								if "ChV" in ttline and "-hr" not in ttline:
+									currentChemical["fishChVSW_ecosar  mg/L"]=ttline[66:77].strip()##############should be??
+							else:
+								if "ChV" in ttline and "-hr" not in ttline:
+									currentChemical["fishChV_ecosar  mg/L"]=ttline[66:77].strip()
+									e4=float(ttline[66:77].strip())
+								if "LC50" in ttline and "96-hr" in ttline:
+									currentChemical["fishLC50_96hr_ecosar  mg/L"]=ttline[66:77].strip()
+									e1=float(ttline[66:77].strip())
+
+						if "Green Algae" in ttline:
 							if "ChV" in ttline and "-hr" not in ttline:
-								currentChemical["fishChV_ecosar  mg/L"]=ttline[66:77].strip()
-								e4=float(ttline[66:77].strip())
+								currentChemical["algaeChV_ecosar  mg/L"]=ttline[66:77].strip()
+								e6=float(ttline[66:77].strip())
+
+						if "Mysid (SW)" in ttline:
+							if "ChV" in ttline and "-hr" not in ttline:
+								currentChemical["shrimpSWChV_ecosar  mg/L"]=ttline[66:77].strip()
+						elif "Mysid" in ttline:
 							if "LC50" in ttline and "96-hr" in ttline:
-								currentChemical["fishLC50_96hr_ecosar  mg/L"]=ttline[66:77].strip()
-								e1=float(ttline[66:77].strip())
+								currentChemical["shrimpLC50_96hr_ecosar  mg/L"]=ttline[66:77].strip()
 
-					if "Green Algae" in ttline:
-						if "ChV" in ttline and "-hr" not in ttline:
-							currentChemical["algaeChV_ecosar  mg/L"]=ttline[66:77].strip()
-							e6=float(ttline[66:77].strip())
-
-					if "Mysid (SW)" in ttline:
-						if "ChV" in ttline and "-hr" not in ttline:
-							currentChemical["shrimpSWChV_ecosar  mg/L"]=ttline[66:77].strip()
-					elif "Mysid" in ttline:
-						if "LC50" in ttline and "96-hr" in ttline:
-							currentChemical["shrimpLC50_96hr_ecosar  mg/L"]=ttline[66:77].strip()
-
-					if "Earthworm" in ttline:
-						if "LC50" in ttline and "14-day" in ttline:
-							currentChemical["earthworm_14day_ecosar  mg/L"]=ttline[66:77].strip()
-							# print(currentChemical["earthworm_ecosar  mg/L"])
+						if "Earthworm" in ttline:
+							if "LC50" in ttline and "14-day" in ttline:
+								currentChemical["earthworm_14day_ecosar  mg/L"]=ttline[66:77].strip()
+								# print(currentChemical["earthworm_ecosar  mg/L"])
+					except Exception:
+						pass
 
 					i=i+1
 					ttline=linesForOneRecord[i]
@@ -313,9 +324,9 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 				if e1!=-1 and e2!=-1 and e3!=-1 and e4!=-1 and e5!=-1 and e6!=-1:
 					if e1>100 and e2>100 and e3>100 and e4>10 and e5>10 and e6>10:
 						currentChemical["aquaTox_acute  unitless"]="low"
-					elif e1<1 and e2<1 and e3<1 and e4<0.10 and e5<0.10 and e6<0.10:
+					elif (e1<1 and e2<1 and e3<1) or (e4<0.10 and e5<0.10 and e6<0.10):
 						currentChemical["aquaTox_acute  unitless"]="high"
-					else:
+					elif (e1>1 and e2>1 and e3>1) or (e4>0.10 and e5>0.10 and e6>0.10):
 						currentChemical["aquaTox_acute  unitless"]="medium"
 
 
@@ -323,16 +334,19 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 				i=lineCounter+2
 				thisline=linesForOneRecord[i]
 				while "========================="  not in thisline:
-					# print("ws")
-					if "Bond Est :" in thisline:
-						currentChemical["HLC  Pa-m3/mole  Bond"] = str(float(thisline[thisline.index("(")+1:thisline.index("Pa")-1].strip()))
-					elif "Group Est:" in thisline:
-						if "Incomplete" in thisline:
-							currentChemical["HLC  Pa-m3/mole  Group"] = "N/A"
-						else:
-							currentChemical["HLC  Pa-m3/mole  Group"] = str(float(thisline[thisline.index("(")+1:thisline.index("Pa")-1].strip()))
-					elif "Exp HLC  :" in thisline:
-						currentChemical["HLC  Pa-m3/mole  exp"] = str(float(thisline[thisline.index("(")+1:thisline.index("Pa")-1].strip()))
+					try:
+						# print("ws")
+						if "Bond Est :" in thisline:
+							currentChemical["HLC  Pa-m3/mole  Bond"] = str(float(thisline[thisline.index("(")+1:thisline.index("Pa")-1].strip()))
+						elif "Group Est:" in thisline:
+							if "Incomplete" in thisline:
+								currentChemical["HLC  Pa-m3/mole  Group"] = "N/A"
+							else:
+								currentChemical["HLC  Pa-m3/mole  Group"] = str(float(thisline[thisline.index("(")+1:thisline.index("Pa")-1].strip()))
+						elif "Exp HLC  :" in thisline:
+							currentChemical["HLC  Pa-m3/mole  exp"] = str(float(thisline[thisline.index("(")+1:thisline.index("Pa")-1].strip()))
+					except Exception:
+						pass
 					i=i+1
 					thisline=linesForOneRecord[i]
 			elif "Log Octanol-Air (KOAWIN v1.10) Results:" in line:################
@@ -340,58 +354,64 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 				thisline=linesForOneRecord[i]
 				while "========================"  not in thisline:
 					# print("ws")
-					if "Log Koa:" in thisline:
-						currentChemical["kOctAir  unitless  est"] = math.pow(10,float(thisline[thisline.index(":")+1:].strip()))
-					elif "Exp LogKoa:" in thisline:
-						currentChemical["kOctAir  unitless  exp"] = math.pow(10,float(thisline[thisline.index(":")+1:].strip()))
-					elif "Log Kaw:" in thisline:
-						currentChemical["kAirWater  unitless"] = math.pow(10,float(thisline[thisline.index(":")+1:thisline.index("(")].strip()))
+					try:
+						if "Log Koa:" in thisline:
+							currentChemical["kOctAir  unitless  est"] = math.pow(10,float(thisline[thisline.index(":")+1:].strip()))
+						elif "Exp LogKoa:" in thisline:
+							currentChemical["kOctAir  unitless  exp"] = math.pow(10,float(thisline[thisline.index(":")+1:].strip()))
+						elif "Log Kaw:" in thisline:
+							currentChemical["kAirWater  unitless"] = math.pow(10,float(thisline[thisline.index(":")+1:thisline.index("(")].strip()))
+					except Exception:
+						pass
 					i=i+1
 					thisline=linesForOneRecord[i]					
 			elif "BIOWIN (v4.10) Program Results:" in line:
 				i=lineCounter+2
 				thisline=linesForOneRecord[i]
 				while "-----+-----+--------"  not in thisline:
-					if "Biowin1" in thisline:
-						blinear=thisline[(thisline.index(":")+1):].strip()
-						if "Not" in blinear:
-							currentChemical["biodeg_linear  unitless"]="No"
-						else:
-							currentChemical["biodeg_linear  unitless"]="Yes"
-					elif "Biowin2" in thisline:
-						bnonlinear=thisline[(thisline.index(":")+1):].strip()
-						if "Not" in blinear:
-							currentChemical["biodeg_nonlinear  unitless"]="No"
-						else:
-							currentChemical["biodeg_nonlinear  unitless"]="Yes"
-					elif "Biowin3" in thisline:
-						currentChemical["biodeg_ultimate  unitless"]=thisline[(thisline.index(":")+1):].strip()
-					elif "Biowin4" in thisline:
-						currentChemical["biodeg_primary  unitless"]=thisline[(thisline.index(":")+1):].strip()
-					elif "Biowin5" in thisline:
-						bMITIlinear=thisline[(thisline.index(":")+1):].strip()
-						if "Not" in bMITIlinear:
-							currentChemical["biodeg_MITIlinear  unitless"]="No"
-						else:
-							currentChemical["biodeg_MITIlinear  unitless"]="Yes"
-					elif "Biowin6" in thisline:
-						bMITInonlinear=thisline[(thisline.index(":")+1):].strip()
-						if "Not" in bMITInonlinear:
-							currentChemical["biodeg_MITInonlinear  unitless"]="No"
-						else:
-							currentChemical["biodeg_MITInonlinear  unitless"]="Yes"
-					elif "Biowin7" in thisline:
-						banaerobic=thisline[(thisline.index(":")+1):].strip()
-						if "Not" in banaerobic:
-							currentChemical["biodeg_anaerobic  unitless"]="No"
-						else:
-							currentChemical["biodeg_anaerobic  unitless"]="Yes"
-					elif "Ready Biodegradability Prediction" in thisline:
-						bready=thisline[(thisline.index(":")+1):].strip()
-						if "Not" in bready:
-							currentChemical["biodeg_ready  unitless"]="No"
-						else:
-							currentChemical["biodeg_ready  unitless"]="Yes"
+					try:
+						if "Biowin1" in thisline:
+							blinear=thisline[(thisline.index(":")+1):].strip()
+							if "Not" in blinear:
+								currentChemical["biodeg_linear  unitless"]="No"
+							else:
+								currentChemical["biodeg_linear  unitless"]="Yes"
+						elif "Biowin2" in thisline:
+							bnonlinear=thisline[(thisline.index(":")+1):].strip()
+							if "Not" in blinear:
+								currentChemical["biodeg_nonlinear  unitless"]="No"
+							else:
+								currentChemical["biodeg_nonlinear  unitless"]="Yes"
+						elif "Biowin3" in thisline:
+							currentChemical["biodeg_ultimate  unitless"]=thisline[(thisline.index(":")+1):].strip()
+						elif "Biowin4" in thisline:
+							currentChemical["biodeg_primary  unitless"]=thisline[(thisline.index(":")+1):].strip()
+						elif "Biowin5" in thisline:
+							bMITIlinear=thisline[(thisline.index(":")+1):].strip()
+							if "Not" in bMITIlinear:
+								currentChemical["biodeg_MITIlinear  unitless"]="No"
+							else:
+								currentChemical["biodeg_MITIlinear  unitless"]="Yes"
+						elif "Biowin6" in thisline:
+							bMITInonlinear=thisline[(thisline.index(":")+1):].strip()
+							if "Not" in bMITInonlinear:
+								currentChemical["biodeg_MITInonlinear  unitless"]="No"
+							else:
+								currentChemical["biodeg_MITInonlinear  unitless"]="Yes"
+						elif "Biowin7" in thisline:
+							banaerobic=thisline[(thisline.index(":")+1):].strip()
+							if "Not" in banaerobic:
+								currentChemical["biodeg_anaerobic  unitless"]="No"
+							else:
+								currentChemical["biodeg_anaerobic  unitless"]="Yes"
+						elif "Ready Biodegradability Prediction" in thisline:
+							bready=thisline[(thisline.index(":")+1):].strip()
+							if "Not" in bready:
+								currentChemical["biodeg_ready  unitless"]="No"
+							else:
+								currentChemical["biodeg_ready  unitless"]="Yes"
+					except Exception:
+						pass
 
 					i=i+1
 					thisline=linesForOneRecord[i]
@@ -406,9 +426,12 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 				thisline=linesForOneRecord[i]
 				while "AEROWIN Program"  not in thisline:
 					# print("ws")
-					if "BioHC Half-Life (days)" in thisline:
-						if "LOG" not in thisline:
-							currentChemical["bioHC_HL  days"]=str(float(thisline[70:].strip()))
+					try:
+						if "BioHC Half-Life (days)" in thisline:
+							if "LOG" not in thisline:
+								currentChemical["bioHC_HL  days"]=str(float(thisline[70:].strip()))
+					except Exception:
+						pass
 
 					i=i+1
 					thisline=linesForOneRecord[i]
@@ -417,20 +440,24 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 				thisline=linesForOneRecord[i]
 				while "================="  not in thisline:
 					# print("ws")
-					if "Kp (particle/gas partition coef. (m3/ug)):" in thisline:
-						nextlinee=linesForOneRecord[i+1]						
-						if "Mackay model" in nextlinee:
-							if "not" in nextlinee:
-								currentChemical["kAerAir  m3/ug  Mackay"]="N/A"
-							else:
-								currentChemical["kAerAir  m3/ug  Mackay"]=str(float(nextlinee[(nextlinee.index(":")+1):].strip()))
-						nextlinee=linesForOneRecord[i+2]
-						if "Koa" in nextlinee:
-							if "not" in nextlinee or "#" in nextlinee:
-								currentChemical["kAerAir  m3/ug  Koa"]="N/A"
-							else:
-								tempvalue=nextlinee[(nextlinee.index(":")+1):].strip()
-								currentChemical["kAerAir  m3/ug  Koa"]=	str(float(tempvalue))					
+					try:
+						if "Kp (particle/gas partition coef. (m3/ug)):" in thisline:
+							nextlinee=linesForOneRecord[i+1]						
+							if "Mackay model" in nextlinee:
+								if "not" in nextlinee:
+									currentChemical["kAerAir  m3/ug  Mackay"]="N/A"
+								else:
+									currentChemical["kAerAir  m3/ug  Mackay"]=str(float(nextlinee[(nextlinee.index(":")+1):].strip()))
+							nextlinee=linesForOneRecord[i+2]
+							if "Koa" in nextlinee:
+								if "not" in nextlinee or "#" in nextlinee:
+									currentChemical["kAerAir  m3/ug  Koa"]="N/A"
+								else:
+									tempvalue=nextlinee[(nextlinee.index(":")+1):].strip()
+									currentChemical["kAerAir  m3/ug  Koa"]=	str(float(tempvalue))
+					except Exception:
+						pass					
+					
 					i=i+1
 					thisline=linesForOneRecord[i]
 			elif "AOP Program (v1.92) Results:" in line:
@@ -438,15 +465,18 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 				thisline=linesForOneRecord[i]
 				while "OZONE REACTION"  not in thisline:
 					# print("ws")
-					if "OVERALL OH Rate Constant" in thisline:
-						ohrc=thisline
-						tempword=ohrc[ohrc.index("=")+1:ohrc.index("cm3")-1].strip()
-						tempword=tempword.replace(" ","")
-						currentChemical["kOH  cm3/molecule-sec"]=str(float(tempword))
-					elif "HALF-LIFE" in thisline:
-						if "Days" in thisline:
-							hloh=thisline
-							currentChemical["OH_HL  days"]=str(float(hloh[hloh.index("=")+1:hloh.index("Days")-1].strip()))
+					try:
+						if "OVERALL OH Rate Constant" in thisline:
+							ohrc=thisline
+							tempword=ohrc[ohrc.index("=")+1:ohrc.index("cm3")-1].strip()
+							tempword=tempword.replace(" ","")
+							currentChemical["kOH  cm3/molecule-sec"]=str(float(tempword))
+						elif "HALF-LIFE" in thisline:
+							if "Days" in thisline:
+								hloh=thisline
+								currentChemical["OH_HL  days"]=str(float(hloh[hloh.index("=")+1:hloh.index("Days")-1].strip()))
+					except Exception:
+						pass
 					i=i+1
 					thisline=linesForOneRecord[i]
 			elif "--- HYDROWIN v2.00 Results ---" in line:####################
@@ -454,29 +484,39 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 				thisline=linesForOneRecord[i]
 				while "========================"  not in thisline:
 					# Kb_HL_pH8 Kb_HL_pH7
-					if "Currently, this program can NOT estimate" in thisline:
-						currentChemical["Kb_HL_pH8  days"]="N/A"
-						currentChemical["Kb_HL_pH7  days"]="N/A"
-						currentChemical["Kb_rateC  L/mol-sec"]="N/A"
-						break
-					else:
-						if "Kb Half-Life at pH 8"  in thisline:
-							if "year" in thisline:
-								currentChemical["Kb_HL_pH8  days"]=str(float(thisline[thisline.index(":")+1:thisline.index("year")-1].strip())*365)
-							elif "hour" in thisline:
-								currentChemical["Kb_HL_pH8  days"]=str(float(thisline[thisline.index(":")+1:thisline.index("hour")-1].strip())/24)
-							else:
-								currentChemical["Kb_HL_pH8  days"]=str(float(thisline[thisline.index(":")+1:thisline.index("day")-1].strip()))
-						elif "Kb Half-Life at pH 7" in thisline:
-							if "year" in thisline:
-								currentChemical["Kb_HL_pH7  days"]=str(float(thisline[thisline.index(":")+1:thisline.index("year")-1].strip())*365)
-							elif "hour" in thisline:
-								currentChemical["Kb_HL_pH7  days"]=str(float(thisline[thisline.index(":")+1:thisline.index("hour")-1].strip())/24)
-							else:
-								currentChemical["Kb_HL_pH7  days"]=str(float(thisline[thisline.index(":")+1:thisline.index("day")-1].strip()))
-						elif "Total Kb for pH > 8 at 25 deg C" in thisline:
-							currentChemical["Kb_rateC  L/mol-sec"]=str(float(thisline[thisline.index(":")+1:thisline.index("L/")-1].strip()))
-
+					try:
+						if "Currently, this program can NOT estimate" in thisline:
+							currentChemical["Kb_HL_pH8  days"]="N/A"
+							currentChemical["Kb_HL_pH7  days"]="N/A"
+							currentChemical["Kb_rateC  L/mol-sec"]="N/A"
+							break
+						else:
+							if "Kb Half-Life at pH 8"  in thisline:
+								try:
+									if "year" in thisline:
+										currentChemical["Kb_HL_pH8  days"]=str(float(thisline[thisline.index(":")+1:thisline.index("year")-1].strip())*365)
+									elif "hour" in thisline:
+										currentChemical["Kb_HL_pH8  days"]=str(float(thisline[thisline.index(":")+1:thisline.index("hour")-1].strip())/24)
+									elif "day" in thisline:
+										currentChemical["Kb_HL_pH7  days"]=str(float(thisline[thisline.index(":")+1:thisline.index("day")-1].strip()))								
+								except Exception:
+									pass
+								# else:
+								# 	currentChemical["Kb_HL_pH8  days"]="N/A"
+							elif "Kb Half-Life at pH 7" in thisline:
+								try:
+									if "year" in thisline:
+										currentChemical["Kb_HL_pH7  days"]=str(float(thisline[thisline.index(":")+1:thisline.index("year")-1].strip())*365)
+									elif "hour" in thisline:
+										currentChemical["Kb_HL_pH7  days"]=str(float(thisline[thisline.index(":")+1:thisline.index("hour")-1].strip())/24)
+									elif "day" in thisline:
+										currentChemical["Kb_HL_pH7  days"]=str(float(thisline[thisline.index(":")+1:thisline.index("day")-1].strip()))
+								except Exception:
+									pass
+							elif "Total Kb for pH > 8 at 25 deg C" in thisline and "L/" in thisline:
+								currentChemical["Kb_rateC  L/mol-sec"]=str(float(thisline[thisline.index(":")+1:thisline.index("L/")-1].strip()))
+					except Exception:
+						pass
 
 					i=i+1
 					thisline=linesForOneRecord[i]
@@ -485,8 +525,11 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 				thisline=linesForOneRecord[i]
 				while "KOCWIN v2.00 Results"  not in thisline:
 					# print("ws")
-					if "Exp LogKoc:" in thisline:
-						currentChemical["kOrgWater  L/kg  exp"] = math.pow(10, float(thisline[thisline.index(":")+1:].strip()))
+					try:
+						if "Exp LogKoc:" in thisline:
+							currentChemical["kOrgWater  L/kg  exp"] = math.pow(10, float(thisline[thisline.index(":")+1:].strip()))
+					except Exception:
+						pass
 
 					i=i+1
 					thisline=linesForOneRecord[i]
@@ -495,9 +538,12 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 				thisline=linesForOneRecord[i]
 				while "<==========="  not in thisline:
 					# print("ws")
-					if "Corrected Log Koc" in thisline:
-						currentChemical["kOrgWater  L/kg  MCI"] = math.pow(10,float(thisline[thisline.index(":")+1:].strip()))
-						
+					try:
+						if "Corrected Log Koc" in thisline:
+							currentChemical["kOrgWater  L/kg  MCI"] = math.pow(10,float(thisline[thisline.index(":")+1:].strip()))
+					except Exception:
+						pass
+
 					i=i+1
 					thisline=linesForOneRecord[i]
 			elif "Koc Estimate from Log Kow:" in line:
@@ -505,9 +551,12 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 				thisline=linesForOneRecord[i]
 				while "<==========="  not in thisline:
 					# print("ws")
-					if "Corrected Log Koc" in thisline:
-						currentChemical["kOrgWater  L/kg  Kow"] = math.pow(10,float(thisline[thisline.index(":")+1:].strip()))
-						
+					try:
+						if "Corrected Log Koc" in thisline:
+							currentChemical["kOrgWater  L/kg  Kow"] = math.pow(10,float(thisline[thisline.index(":")+1:].strip()))
+					except Exception:
+						pass
+
 					i=i+1
 					thisline=linesForOneRecord[i]
 			elif "SUMMARY (AOP v1.91): OZONE REACTION (25 deg C)" in line:########################--- HYDROWIN v2.00 Results ---
@@ -516,18 +565,21 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 				thisline=linesForOneRecord[i]
 				while "========================"  not in thisline:
 					# print("ws")
-					if "Exper Ozone rate constant:" in thisline:
-						kor = thisline[thisline.index(":")+1:thisline.index("cm3")-1].strip()
-						if kor=="---":
-							currentChemical["kO3  cm3/molecule-sec"] = "N/A"
-						else:
-							currentChemical["kO3  cm3/molecule-sec"] = kor
-					elif "Exper NO3 rate constant" in thisline:
-						kor = thisline[thisline.index(":")+1:thisline.index("cm3")-1].strip()
-						if kor=="---":
-							currentChemical["kNO3  cm3/molecule-sec"] = "N/A"
-						else:
-							currentChemical["kNO3  cm3/molecule-sec"] = kor					
+					try:
+						if "Exper Ozone rate constant:" in thisline:
+							kor = thisline[thisline.index(":")+1:thisline.index("cm3")-1].strip()
+							if kor=="---":
+								currentChemical["kO3  cm3/molecule-sec"] = "N/A"
+							else:
+								currentChemical["kO3  cm3/molecule-sec"] = kor
+						elif "Exper NO3 rate constant" in thisline:
+							kor = thisline[thisline.index(":")+1:thisline.index("cm3")-1].strip()
+							if kor=="---":
+								currentChemical["kNO3  cm3/molecule-sec"] = "N/A"
+							else:
+								currentChemical["kNO3  cm3/molecule-sec"] = kor					
+					except Exception:
+						pass
 					i=i+1
 					thisline=linesForOneRecord[i]
 			elif "BCFBAF Program (v3.01) Results:" in line:
@@ -535,14 +587,17 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 				thisline=linesForOneRecord[i]
 				while "======================================="  not in thisline:
 					# print("ws")
-					if "Log BCF (regression-based estimate):" in thisline:
-						currentChemical["LogBCF  L/kg wet-wt  Regression"] = thisline[thisline.rfind("=")+1:thisline.rfind("L")-1].strip()
-					elif "Log BAF (Arnot-Gobas upper trophic):" in thisline:
-						currentChemical["LogBCF  L/kg wet-wt  Arnot-Gobas"] = thisline[thisline.rfind("=")+1:thisline.rfind("L")-1].strip()
-					elif "Biotransformation Half-Life (days)" in thisline:
-						currentChemical["biotrans_HL  days"] = thisline[thisline.rfind(":")+1:thisline.rfind("(")-1].strip()
-					elif "Bio Half-life" in thisline:
-						currentChemical["bio_HL  days"]= thisline[thisline.rfind("=")+1:thisline.rfind("days")].strip()
+					try:
+						if "Log BCF (regression-based estimate):" in thisline:
+							currentChemical["LogBCF  L/kg wet-wt  Regression"] = thisline[thisline.rfind("=")+1:thisline.rfind("L")-1].strip()
+						elif "Log BAF (Arnot-Gobas upper trophic):" in thisline:
+							currentChemical["LogBCF  L/kg wet-wt  Arnot-Gobas"] = thisline[thisline.rfind("=")+1:thisline.rfind("L")-1].strip()
+						elif "Biotransformation Half-Life (days)" in thisline:
+							currentChemical["biotrans_HL  days"] = thisline[thisline.rfind(":")+1:thisline.rfind("(")-1].strip()
+						elif "Bio Half-life" in thisline:
+							currentChemical["bio_HL  days"]= thisline[thisline.rfind("=")+1:thisline.rfind("days")].strip()
+					except Exception:
+						pass
 
 					i=i+1
 					thisline=linesForOneRecord[i]
@@ -551,13 +606,16 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 				thisline=linesForOneRecord[i]
 				while "============"  not in thisline:
 					# print("ws")
-					if "kM (Rate Constant)" in thisline:
-						if "(10 gram fish)" in thisline:
-							aaaaa=thisline[thisline.rfind(":")+1:thisline.rfind("/day")-1].strip()
-							print("===")
-							print(aaaaa)
-							currentChemical["Km_10  /day"] = aaaaa
-							
+					try:
+						if "kM (Rate Constant)" in thisline:
+							if "(10 gram fish)" in thisline:
+								aaaaa=thisline[thisline.rfind(":")+1:thisline.rfind("/day")-1].strip()
+								if "---" in aaaaa or "n" in aaaaa:
+									currentChemical["Km_10  /day"] = "N/A"
+								else:
+									currentChemical["Km_10  /day"] = aaaaa
+					except Exception:
+						pass	
 
 					i=i+1
 					thisline=linesForOneRecord[i]
@@ -566,28 +624,31 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 				thisline=linesForOneRecord[i]
 				asludge=0
 				while "============"  not in thisline:
-					if "Total removal" in thisline:
-						removalLine=thisline
-						thisspot=removalLine[62:].strip()
-						if thisspot!="":
-							currentChemical["WWTremoval  %  10000hr"] = thisspot
-					elif "Total biodegradation" in thisline:
-						biodegLine=thisline
-						thisspot=biodegLine[62:].strip()
-						if thisspot!="":
-							currentChemical["WWTbio  %  10000hr"] = thisspot
-					elif "Primary sludge" in thisline:
-						asludge=float(thisline[62:].strip())
-					elif "Waste sludge" in thisline:	
-						sludgeAdsLine=thisline
-						thisspot=sludgeAdsLine[62:].strip()
-						if thisspot!="":
-							currentChemical["WWTslu  %  10000hr"] = str(float(thisspot)+asludge)
-					elif "Aeration off gas" in thisline:
-						toAirLine=thisline
-						thisspot=toAirLine[62:].strip()
-						if thisspot!="":
-							currentChemical["WWTair  %  10000hr"] = thisspot
+					try:
+						if "Total removal" in thisline:
+							removalLine=thisline
+							thisspot=removalLine[62:].strip()
+							if thisspot!="":
+								currentChemical["WWTremoval  %  10000hr"] = thisspot
+						elif "Total biodegradation" in thisline:
+							biodegLine=thisline
+							thisspot=biodegLine[62:].strip()
+							if thisspot!="":
+								currentChemical["WWTbio  %  10000hr"] = thisspot
+						elif "Primary sludge" in thisline:
+							asludge=float(thisline[62:].strip())
+						elif "Waste sludge" in thisline:	
+							sludgeAdsLine=thisline
+							thisspot=sludgeAdsLine[62:].strip()
+							if thisspot!="":
+								currentChemical["WWTslu  %  10000hr"] = str(float(thisspot)+asludge)
+						elif "Aeration off gas" in thisline:
+							toAirLine=thisline
+							thisspot=toAirLine[62:].strip()
+							if thisspot!="":
+								currentChemical["WWTair  %  10000hr"] = thisspot
+					except Exception:
+						pass
 
 					i=i+1
 					thisline=linesForOneRecord[i]
@@ -596,30 +657,33 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 				thisline=linesForOneRecord[i]
 				asludge=0
 				while "============"  not in thisline:
-					if "Total removal" in thisline:
-						removalLine=thisline
-						thisspot=removalLine[62:].strip()
-						if thisspot!="":
-							currentChemical["WWTremoval  %  Biowin/EPA"] = thisspot
-					elif "Total biodegradation" in thisline:
-						biodegLine=thisline
-						thisspot=biodegLine[62:].strip()
-						if thisspot!="":
-							currentChemical["WWTbio  %  Biowin/EPA"] = thisspot
-					elif "Primary sludge" in thisline:
-						thisspot=thisline[62:].strip()
-						if thisspot!="":
-							asludge=float(thisspot)
-					elif "Waste sludge" in thisline:	
-						sludgeAdsLine=thisline
-						thisspot=sludgeAdsLine[62:].strip()
-						if thisspot!="":
-							currentChemical["WWTslu  %  Biowin/EPA"] = str(float(thisspot)+asludge)
-					elif "Aeration off gas" in thisline:
-						toAirLine=thisline
-						thisspot=toAirLine[62:].strip()
-						if thisspot!="":
-							currentChemical["WWTair  %  Biowin/EPA"] = thisspot
+					try:
+						if "Total removal" in thisline:
+							removalLine=thisline
+							thisspot=removalLine[62:].strip()
+							if thisspot!="":
+								currentChemical["WWTremoval  %  Biowin/EPA"] = thisspot
+						elif "Total biodegradation" in thisline:
+							biodegLine=thisline
+							thisspot=biodegLine[62:].strip()
+							if thisspot!="":
+								currentChemical["WWTbio  %  Biowin/EPA"] = thisspot
+						elif "Primary sludge" in thisline:
+							thisspot=thisline[62:].strip()
+							if thisspot!="":
+								asludge=float(thisspot)
+						elif "Waste sludge" in thisline:	
+							sludgeAdsLine=thisline
+							thisspot=sludgeAdsLine[62:].strip()
+							if thisspot!="":
+								currentChemical["WWTslu  %  Biowin/EPA"] = str(float(thisspot)+asludge)
+						elif "Aeration off gas" in thisline:
+							toAirLine=thisline
+							thisspot=toAirLine[62:].strip()
+							if thisspot!="":
+								currentChemical["WWTair  %  Biowin/EPA"] = thisspot
+					except Exception:
+						pass
 
 					i=i+1
 					thisline=linesForOneRecord[i]
@@ -632,14 +696,17 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 
 				while "Fugacity    Reaction    Advection   Reaction    Advection"  not in thisline:
 					# print("ws")
-					if "Air" in thisline:
-						currentChemical["HLDegAir  hour"] = thisline[29:41].strip()
-					elif "Water" in thisline:
-						currentChemical["HLDegWater  hour"] = thisline[29:41].strip()
-					elif "Soil" in thisline:
-						currentChemical["HLDegSoil  hour"] = thisline[29:41].strip()
-					elif "Sediment" in thisline:
-						currentChemical["HLDegSed  hour"] = thisline[29:41].strip()
+					try:
+						if "Air" in thisline:
+							currentChemical["HLDegAir  hour"] = thisline[29:41].strip()
+						elif "Water" in thisline:
+							currentChemical["HLDegWater  hour"] = thisline[29:41].strip()
+						elif "Soil" in thisline:
+							currentChemical["HLDegSoil  hour"] = thisline[29:41].strip()
+						elif "Sediment" in thisline:
+							currentChemical["HLDegSed  hour"] = thisline[29:41].strip()
+					except Exception:
+						pass
 
 					i=i+1
 					thisline=linesForOneRecord[i]
@@ -729,8 +796,8 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 		# 	currentChemical["Kp  m3/ug  Mackay"] = "N/A"
 		if "kAerAir  m3/ug  Mackay" not in currentChemical:
 			currentChemical["kAerAir  m3/ug  Mackay"] = "N/A"
-		if "kAerAir  m3/ug  Mackay" not in currentChemical:
-			currentChemical["kAerAir  m3/ug  Mackay"] = "N/A"
+		if "kAerAir  m3/ug  Koa" not in currentChemical:
+			currentChemical["kAerAir  m3/ug  Koa"] = "N/A"
 
 		if "kOH  cm3/molecule-sec" not in currentChemical:
 			currentChemical["kOH  cm3/molecule-sec"] = "N/A"
@@ -828,12 +895,13 @@ def read_epi_result_toJson(resultFilePath,jsonOutputPath="default"):
 	# write JSON to file
 
 	#chemicals=add_more_result_toJson(chemicals)
-
+	chemicals.pop(0)
 
 	if jsonOutputPath == "default":
 		jsonOutputPath = resultFilePath[:-3]+"json"
 	with open(jsonOutputPath, "w") as outputFile:
 		json.dump(chemicals, outputFile, sort_keys=True, indent= 4, separators=(',', ': '))
+
 
 
 """
