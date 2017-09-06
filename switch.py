@@ -376,7 +376,8 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
             
             # modify output file path (history/md5/epibat.out) for episuite 
             orig_epi_out_path_str = "Z:\home\\awsgui\Desktop\qsar\episuite_file\epibat.out"
-            epi_out_win_path = os.path.join(epi_file_folder,"epibat.out").replace("/home","Z:\\home").replace("/","\\")
+            EPI_RESULT_PATH = os.path.join(epi_file_folder,"epibat.out")
+            epi_out_win_path = EPI_RESULT_PATH.replace("/home","Z:\\home").replace("/","\\")
             sikuli_template = sikuli_template.replace(orig_epi_out_path_str,epi_out_win_path)
             
             # save modified sikuli script to temp folder
