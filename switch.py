@@ -440,7 +440,7 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
         # run sikulix script to operate epi
         epi_time = time.time()
         # This command assumes a symlink to runsikulix have been created
-        os.system("{0} -r {1}".format(os.path.join(DIR_PATH,"runsikulix"),
+        os.system("{0} -r {1}".format(os.path.join(DIR_PATH,"sikulix/runsikulix"),
                                       os.path.join(DIR_PATH,"sikuli_scripts/epi_script.sikuli")))
         
         read_epi_result_toJson(PATH_DICT["EPI_SCRIPT_PATH"],
@@ -455,7 +455,7 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
 
         resultJsonObject=[currentepi]
 
-        jsonOutputPath = os.path.normpath(os.path.join(DIR_PATH,"episuite_file/epibat.json"))
+        jsonOutputPath = os.path.normpath(os.path.join(RESULT_JSON_FOLDER,'epi_result.json'))#os.path.join(DIR_PATH,"episuite_file/epibat.json"))
         with open(jsonOutputPath, "w") as outputFile:
             json.dump(resultJsonObject, outputFile,
                     sort_keys=True, indent= 4, separators=(',', ': '))
@@ -483,7 +483,7 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
         resultJsonObject = [currentvega]
         
         #output the result
-        jsonOutputPath = os.path.normpath(os.path.join(DIR_PATH,"vega_file/result_test.json"))
+        jsonOutputPath = os.path.normpath(os.path.join(RESULT_JSON_FOLDER,'vega_result.json'))#os.path.join(DIR_PATH,"vega_file/result_test.json"))
         with open(jsonOutputPath, "w") as outputFile:
             json.dump(resultJsonObject, outputFile,
                     sort_keys=True, indent= 4, separators=(',', ': '))
@@ -519,7 +519,7 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
         resultJsonObject = [currenttest]
 
         #output the result
-        jsonOutputPath = os.path.normpath(os.path.join(DIR_PATH,"test_file/for_testing/temp_result2/test_results.json"))
+        jsonOutputPath = os.path.normpath(PATH_DICT["TEST_RESULT_PATH"])#os.path.join(DIR_PATH,"test_file/for_testing/temp_result2/test_results.json"))
         with open(jsonOutputPath, "w") as outputFile:
             # json.dump(resultJsonObject, outputFile,
             #         sort_keys=True, indent= 4, separators=(',', ': '))
