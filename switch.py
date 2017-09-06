@@ -492,6 +492,10 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
         print("VEGA used {} seconds to complete.".format(time.time()-vega_time))
         #print("{} process used".format(cpu_count()))
     else:
+        # if json results already exists, there's no need to replace it with an N/A json
+        jsonOutputPath = os.path.normpath(os.path.join(RESULT_JSON_FOLDER,'vega_result.json'))#os.path.join(DIR_PATH,"vega_file/result_test.json"))
+        if os.path.exists(jsonOutputPath):
+            pass
         #create the empty vage component if switch is off
         currentvega=veganone
         currentvega["SMILES"]=smiles
@@ -499,7 +503,6 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
         resultJsonObject = [currentvega]
         
         #output the result
-        jsonOutputPath = os.path.normpath(os.path.join(RESULT_JSON_FOLDER,'vega_result.json'))#os.path.join(DIR_PATH,"vega_file/result_test.json"))
         with open(jsonOutputPath, "w") as outputFile:
             json.dump(resultJsonObject, outputFile,
                     sort_keys=True, indent= 4, separators=(',', ': '))
@@ -513,6 +516,10 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
         print("{0} process used".format(cpu_count()))
         print("TEST used {0} seconds to complete.".format(time.time()-test_time))
     else:
+        # if json results already exists, there's no need to replace it with an N/A json
+        jsonOutputPath = os.path.normpath(os.path.join(PATH_DICT["TEST_RESULT_PATH"],"test_result.json"))#os.path.join(DIR_PATH,"test_file/for_testing/temp_result2/test_results.json"))
+        if os.path.exists(jsonOutputPath):
+            pass
         #create the empty test component if switch is off
         currenttest={}
 
@@ -524,7 +531,6 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
         resultJsonObject = [currenttest]
 
         #output the result
-        jsonOutputPath = os.path.normpath(os.path.join(PATH_DICT["TEST_RESULT_PATH"],"test_result.json"))#os.path.join(DIR_PATH,"test_file/for_testing/temp_result2/test_results.json"))
         with open(jsonOutputPath, "w") as outputFile:
             json.dump(resultJsonObject, outputFile,
                     sort_keys=True, indent= 4, separators=(',', ': '))
