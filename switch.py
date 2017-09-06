@@ -351,10 +351,11 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
     feed at least 1 'correct' smiles to episuite so that it can generate output.
     Thus, to handle potential 'wrong' smiles, we put a place holder in epi_smiles.txt
     '''
+    # create folder ./history/md5/episuite_file
+    epi_file_folder = os.path.join(temp_dir_path, "episuite_file")
+    make_dir_if_necessary(epi_file_folder)
     if epi:
         # serialize smiles for EPI-suite
-        epi_file_folder = os.path.join(temp_dir_path, "episuite_file")
-        make_dir_if_necessary(epi_file_folder)
         EPI_SMILES_PATH = os.path.join(epi_file_folder,"epi_smiles.txt")
         epi_smiles = open(EPI_SMILES_PATH, "w")
         epi_smiles.write("CC\n"+smiles+"\n")
@@ -390,10 +391,11 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
         Also, epi input file has an additional placeholder, 
         but vega/test does NOT need a placeholder)
     '''
+    # create folder ./history/md5/vega_file
+    vega_file_folder = os.path.join(temp_dir_path, "vega_file")
+    make_dir_if_necessary(vega_file_folder)
     if vega:
         # serialize smiles for VEGA
-        vega_file_folder = os.path.join(temp_dir_path, "vega_file")
-        make_dir_if_necessary(vega_file_folder)
         vega_smiles = open(os.path.join(vega_file_folder,'vega_source.txt'), "w")
         vega_smiles.write(smiles+"\n")
         vega_smiles.close()
@@ -402,11 +404,13 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
         VEGA_RESULT_PATH = change_vega_script(os.path.normpath(DIR_PATH + "/vega_file/script_shaoyi"),
                            vega_file_folder, VEGA_SCRIPT_PATH)
 
+    # create folder ./history/md5/test_file
+    test_file_path = os.path.join(temp_dir_path, "test_file")
+    make_dir_if_necessary(test_file_path)
+    TEST_RESULT_PATH = test_file_path
+    
     if test:
         # serialize smiles for TEST
-        test_file_path = os.path.join(temp_dir_path, "test_file")
-        make_dir_if_necessary(test_file_path)
-        TEST_RESULT_PATH = test_file_path
         TEST_SMILES_PATH = os.path.join(test_file_path,"test_smiles.txt")
         test_smiles = open(TEST_SMILES_PATH, "w")
         test_smiles.write(smiles+"\n")
@@ -443,6 +447,7 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
     RESULT_JSON_FOLDER = os.path.join(TEMP_DIR_PATH,'json')
     make_dir_if_necessary(RESULT_JSON_FOLDER)
     PATH_DICT = serialize_smiles_and_generate_scripts(smiles,TEMP_DIR_PATH,epi,vega,test)
+    print(PATH_DICT)
 
     if epi:
         # run sikulix script to operate epi
@@ -527,7 +532,7 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
         resultJsonObject = [currenttest]
 
         #output the result
-        jsonOutputPath = os.path.normpath(PATH_DICT["TEST_RESULT_PATH"])#os.path.join(DIR_PATH,"test_file/for_testing/temp_result2/test_results.json"))
+        jsonOutputPath = os.path.normpath(os.path.join(PATH_DICT["TEST_RESULT_PATH"],"test_result.json"))#os.path.join(DIR_PATH,"test_file/for_testing/temp_result2/test_results.json"))
         with open(jsonOutputPath, "w") as outputFile:
             # json.dump(resultJsonObject, outputFile,
             #         sort_keys=True, indent= 4, separators=(',', ': '))
