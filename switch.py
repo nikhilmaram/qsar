@@ -419,10 +419,10 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
         test_smiles.write(smiles+"\n")
         test_smiles.close()
 
-    RESULT_JSON_FOLDER = os.path.join(temp_dir_path,'json')
-    EPI_RESULT_JSON_PATH = os.path.join(RESULT_JSON_FOLDER,'epi_result.json')
-    VEGA_RESULT_JSON_PATH = os.path.join(RESULT_JSON_FOLDER,'vega_result.json')
-    TEST_RESULT_JSON_PATH = os.path.join(RESULT_JSON_FOLDER,'test_result.json')
+    # RESULT_JSON_FOLDER = os.path.join(temp_dir_path,'json')
+    EPI_RESULT_JSON_PATH = os.path.join(temp_dir_path,'epi_result.json')
+    VEGA_RESULT_JSON_PATH = os.path.join(temp_dir_path,'vega_result.json')
+    TEST_RESULT_JSON_PATH = os.path.join(temp_dir_path,'test_result.json')
     
     return {"EPI_SCRIPT_PATH":EPI_SCRIPT_PATH,
             "EPI_RESULT_PATH":EPI_RESULT_PATH,
@@ -549,11 +549,13 @@ def switch(smiles,epi,vega,test,test_opt="1",
 
     print(smiles)
     # delete stuff in temp folder except json
-    temp_files = set(os.listdir(TEMP_DIR_PATH))
-    temp_files.remove('json')
+    temp_files = set([os.path.join(TEMP_DIR_PATH,folder) for folder in os.listdir(TEMP_DIR_PATH)])
+    # temp_files.remove(os.path.join(TEMP_DIR_PATH,'json'))
     for file in temp_files:
+        if '.json' in file:
+            continue
         command = "rm -rf {0}".format(file)
-        print(command)
+        # print(command)
         os.system(command)
     
     # code for Pre run model
@@ -565,7 +567,7 @@ def switch(smiles,epi,vega,test,test_opt="1",
         save_json_to_bath_json(PATH_DICT["TEST_RESULT_JSON_PATH"],test_batch_path)
 
     #outputFilePath = DEFAULT_JSON_OUTPUT_FILEPATH
-    #qsar_dict = parse(epiJSON,vegaJSON,testJSON,outputFilePath)
+    # qsar_dict = parse(epiJSON,vegaJSON,testJSON,outputFilePath)
     #return qsar_dict
 
 def save_json_to_bath_json(result_json_path,outfile_path):
