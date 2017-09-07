@@ -360,15 +360,16 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
         epi_smiles = open(EPI_SMILES_PATH, "w")
         epi_smiles.write("CC\n"+smiles+"\n")
         epi_smiles.close()
-
+        sep = os.sep
         # modify sikulix script and copy to temp folder
-        with open(os.path.abspath("./sikuli_scripts/epi_script.sikuli/epi_script.py")) as sikuli_in:
+        sikuli_template_path = os.path.join(sep.join(temp_dir_path.split(sep)[:-2]),"sikuli_scripts/epi_script.sikuli")
+        with open(os.path.join(sikuli_template_path,"epi_script.py")) as sikuli_in:
             # create .sikuli script folder
             epi_script_folder = os.path.join(epi_file_folder,'epi_script.sikuli')
             make_dir_if_necessary(epi_script_folder)
             EPI_SCRIPT_PATH = os.path.join(epi_script_folder,'epi_script.py')
             # symlink pictures to temp folder
-            symlink_command = "ln -s {0}/*.png {1}".format(os.path.abspath("./sikuli_scripts/epi_script.sikuli/"),epi_script_folder)
+            symlink_command = "ln -s {0}/*.png {1}".format(sikuli_template_path,epi_script_folder)
             os.system(symlink_command)
 
             # modify input file (epi_smiles.txt) path in sikuli script template
@@ -446,7 +447,7 @@ def switch(smiles,epi,vega,test,test_opt="1",
     # Thus, we apply MD5 function upon smiles string to obtain a 'unique' identifier
 
     md5 = hashlib.md5()
-    md5.update(sys.argv[1])
+    md5.update(smiles)
     SMILES_MD5 = md5.hexdigest()
     
     print(epi,vega,test)
@@ -456,9 +457,10 @@ def switch(smiles,epi,vega,test,test_opt="1",
     # RESULT_JSON_FOLDER: 1. json for each model 2. combined json
     TEMP_DIR_PATH = os.path.join(DIR_PATH,'history',SMILES_MD5)
     print('temp:',TEMP_DIR_PATH)
+    print(SMILES_MD5,smiles)
     make_dir_if_necessary(TEMP_DIR_PATH)
-    RESULT_JSON_FOLDER = os.path.join(TEMP_DIR_PATH,'json')
-    make_dir_if_necessary(RESULT_JSON_FOLDER)
+    #RESULT_JSON_FOLDER = os.path.join(TEMP_DIR_PATH,'json')
+    #make_dir_if_necessary(RESULT_JSON_FOLDER)
     PATH_DICT = serialize_smiles_and_generate_scripts(smiles,TEMP_DIR_PATH,epi,vega,test)
     print(PATH_DICT)
 
@@ -527,7 +529,7 @@ def switch(smiles,epi,vega,test,test_opt="1",
         print("TEST used {0} seconds to complete.".format(time.time()-test_time))
     else:
         # if json results already exists, there's no need to replace it with an N/A json
-        jsonOutputPath = PATH_DICT["TEST_RESULT_JSON_PATH"]#os.path.join(DIR_PATH,"test_file/for_testing/temp_result2/test_results.json"))
+        jsonOutputPath = os.path.join(DIR_PATH,'test_result.json')#os.path.join(DIR_PATH,"test_file/for_testing/temp_result2/test_results.json"))
         if os.path.exists(jsonOutputPath):
             pass
         #create the empty test component if switch is off
