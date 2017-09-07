@@ -522,7 +522,7 @@ def switch(smiles,epi,vega,test,test_opt="1",
     test_time = time.time()
 
     if test:
-        TEST_batch_allEndpoints(PATH_DICT["TEST_SMILES_PATH"],PATH_DICT["TEST_RESULT_JSON_PATH"],test_opt)
+        TEST_batch_allEndpoints(PATH_DICT["TEST_SMILES_PATH"],PATH_DICT[TEMP_DIR_PATH],test_opt)
         print("{0} process used".format(cpu_count()))
         print("TEST used {0} seconds to complete.".format(time.time()-test_time))
     else:
