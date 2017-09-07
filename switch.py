@@ -561,11 +561,11 @@ def switch(smiles,epi,vega,test,test_opt="1",
         os.system(command)
     
     # code for Pre run model
-    if "NONE" in epi_batch_path and epi:
+    if "NONE" not in epi_batch_path and epi:
         save_json_to_bath_json(PATH_DICT["EPI_RESULT_JSON_PATH"],epi_batch_path)
-    if "NONE" in vega_batch_path and vega:
+    if "NONE" not in vega_batch_path and vega:
         save_json_to_bath_json(PATH_DICT["VEGA_RESULT_JSON_PATH"],vega_batch_path)
-    if "NONE" in test_batch_path and test:
+    if "NONE" not in test_batch_path and test:
         save_json_to_bath_json(PATH_DICT["TEST_RESULT_JSON_PATH"],test_batch_path)
 
     #outputFilePath = DEFAULT_JSON_OUTPUT_FILEPATH
