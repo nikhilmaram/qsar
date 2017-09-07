@@ -457,8 +457,8 @@ def switch(smiles,epi,vega,test,test_opt="1",
     TEMP_DIR_PATH = os.path.join(DIR_PATH,'history',SMILES_MD5)
     print('temp:',TEMP_DIR_PATH)
     make_dir_if_necessary(TEMP_DIR_PATH)
-    RESULT_JSON_FOLDER = os.path.join(TEMP_DIR_PATH,'json')
-    make_dir_if_necessary(RESULT_JSON_FOLDER)
+    #RESULT_JSON_FOLDER = os.path.join(TEMP_DIR_PATH,'json')
+    #make_dir_if_necessary(RESULT_JSON_FOLDER)
     PATH_DICT = serialize_smiles_and_generate_scripts(smiles,TEMP_DIR_PATH,epi,vega,test)
     print(PATH_DICT)
 
