@@ -455,6 +455,7 @@ def switch(smiles,epi,vega,test,test_opt="1",
     # TEMP_DIR_PATH: runtime temp files
     # RESULT_JSON_FOLDER: 1. json for each model 2. combined json
     TEMP_DIR_PATH = os.path.join(DIR_PATH,'history',SMILES_MD5)
+    print('temp:',TEMP_DIR_PATH)
     make_dir_if_necessary(TEMP_DIR_PATH)
     RESULT_JSON_FOLDER = os.path.join(TEMP_DIR_PATH,'json')
     make_dir_if_necessary(RESULT_JSON_FOLDER)
@@ -547,13 +548,20 @@ def switch(smiles,epi,vega,test,test_opt="1",
             # json.dump(resultJsonObject, outputFile)
 
     print(smiles)
-
+    # delete stuff in temp folder except json
+    temp_files = set(os.listdir(TEMP_DIR_PATH))
+    temp_files.remove('json')
+    for file in temp_files:
+        command = "rm -rf {0}".format(file)
+        print(command)
+        os.system(command)
+    
     # code for Pre run model
-    if "NONE" in epi_batch_path:
+    if "NONE" in epi_batch_path and epi:
         save_json_to_bath_json(PATH_DICT["EPI_RESULT_JSON_PATH"],epi_batch_path)
-    if "NONE" in vega_batch_path:
+    if "NONE" in vega_batch_path and vega:
         save_json_to_bath_json(PATH_DICT["VEGA_RESULT_JSON_PATH"],vega_batch_path)
-    if "NONE" in test_batch_path:
+    if "NONE" in test_batch_path and test:
         save_json_to_bath_json(PATH_DICT["TEST_RESULT_JSON_PATH"],test_batch_path)
 
     #outputFilePath = DEFAULT_JSON_OUTPUT_FILEPATH
