@@ -419,15 +419,24 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
         test_smiles.write(smiles+"\n")
         test_smiles.close()
 
+    RESULT_JSON_FOLDER = os.path.join(temp_dir_path,'json')
+    EPI_RESULT_JSON_PATH = os.path.join(RESULT_JSON_FOLDER,'epi_result.json')
+    VEGA_RESULT_JSON_PATH = os.path.join(RESULT_JSON_FOLDER,'vega_result.json')
+    TEST_RESULT_JSON_PATH = os.path.join(RESULT_JSON_FOLDER,'test_result.json')
+    
     return {"EPI_SCRIPT_PATH":EPI_SCRIPT_PATH,
             "EPI_RESULT_PATH":EPI_RESULT_PATH,
+            "EPI_RESULT_JSON_PATH":EPI_RESULT_JSON_PATH,
             "VEGA_SCRIPT_PATH":VEGA_SCRIPT_PATH,
             "VEGA_RESULT_PATH":VEGA_RESULT_PATH,
+            "VEGA_RESULT_JSON_PATH":VEGA_RESULT_JSON_PATH,
             "TEST_SMILES_PATH":TEST_SMILES_PATH,
-            "TEST_RESULT_PATH":TEST_RESULT_PATH}
+            "TEST_RESULT_PATH":TEST_RESULT_PATH,
+            "TEST_RESULT_JSON_PATH":TEST_RESULT_JSON_PATH}
 
 # smile: string, epi,vega,test: boolean, 
-def switch(smiles,epi,vega,test,UUID,testopt="1"):
+def switch(smiles,epi,vega,test,testopt="1",
+           epi_batch_path="None",vega_batch_path="None",test_batch_path="None"):
 
     # Given a MD5 hash for a smiles, create a folder that stores epi_script, vega_script
     # and temperory result for all 3 models. A MD5 is needed because smiles contain special
@@ -460,7 +469,7 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
                                       os.path.join(TEMP_DIR_PATH,"episuite_file","epi_script.sikuli")))
         
         read_epi_result_toJson(PATH_DICT["EPI_RESULT_PATH"],
-                               os.path.join(RESULT_JSON_FOLDER,'epi_result.json'))
+                               PATH_DICT["EPI_RESULT_JSON_PATH"])
         # os.system("python " +DIR_PATH+ "/episuite_file/parse_episuite.py")
         #os.system("rm "+dir_path+"/episuite_file/epibat.out")
         print("EPI used {} seconds to complete.".format(time.time()-epi_time))
@@ -471,7 +480,7 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
 
         resultJsonObject=[currentepi]
 
-        jsonOutputPath = os.path.normpath(os.path.join(RESULT_JSON_FOLDER,'epi_result.json'))#os.path.join(DIR_PATH,"episuite_file/epibat.json"))
+        jsonOutputPath = PATH_DICT["EPI_RESULT_JSON_PATH"]#os.path.join(DIR_PATH,"episuite_file/epibat.json"))
         with open(jsonOutputPath, "w") as outputFile:
             json.dump(resultJsonObject, outputFile,
                     sort_keys=True, indent= 4, separators=(',', ': '))
@@ -487,13 +496,13 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
         # change the hard coded path in vega script
         os.system("java -jar " + java_command)
         read_vega_result_toJSON(PATH_DICT["VEGA_RESULT_PATH"],
-                                os.path.join(RESULT_JSON_FOLDER,'vega_result.json'))
+                                PATH_DICT["VEGA_RESULT_JSON_PATH"])
         # os.system("python " + os.path.normpath(DIR_PATH+ "/vega_file/parse_vega.py"))
         print("VEGA used {} seconds to complete.".format(time.time()-vega_time))
         #print("{} process used".format(cpu_count()))
     else:
         # if json results already exists, there's no need to replace it with an N/A json
-        jsonOutputPath = os.path.normpath(os.path.join(RESULT_JSON_FOLDER,'vega_result.json'))#os.path.join(DIR_PATH,"vega_file/result_test.json"))
+        jsonOutputPath = PATH_DICT["VEGA_RESULT_JSON_PATH"]#os.path.join(DIR_PATH,"vega_file/result_test.json"))
         if os.path.exists(jsonOutputPath):
             pass
         #create the empty vage component if switch is off
@@ -517,7 +526,7 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
         print("TEST used {0} seconds to complete.".format(time.time()-test_time))
     else:
         # if json results already exists, there's no need to replace it with an N/A json
-        jsonOutputPath = os.path.normpath(os.path.join(PATH_DICT["TEST_RESULT_PATH"],"test_result.json"))#os.path.join(DIR_PATH,"test_file/for_testing/temp_result2/test_results.json"))
+        jsonOutputPath = PATH_DICT["TEST_RESULT_JSON_PATH"]#os.path.join(DIR_PATH,"test_file/for_testing/temp_result2/test_results.json"))
         if os.path.exists(jsonOutputPath):
             pass
         #create the empty test component if switch is off
@@ -539,20 +548,23 @@ def switch(smiles,epi,vega,test,UUID,testopt="1"):
 
     print(smiles)
 
+    # code for Pre run model
+    if "NONE" in epi_batch_path:
+        save_json_to_bath_json(PATH_DICT["EPI_RESULT_JSON_PATH"],epi_batch_path)
+    if "NONE" in vega_batch_path:
+        save_json_to_bath_json(PATH_DICT["VEGA_RESULT_JSON_PATH"],vega_batch_path)
+    if "NONE" in test_batch_path:
+        save_json_to_bath_json(PATH_DICT["TEST_RESULT_JSON_PATH"],test_batch_path)
+
     #outputFilePath = DEFAULT_JSON_OUTPUT_FILEPATH
     #qsar_dict = parse(epiJSON,vegaJSON,testJSON,outputFilePath)
     #return qsar_dict
 
-def save_test_result(outfile_path):
+def save_json_to_bath_json(result_json_path,outfile_path):
     # append output json of current smiles to the large json of 500 smiles
     with open(outfile_path,'a') as fp_out:
-        with open(TEST_SAMPLE_RESULTS_JSON_FILEPATH,'r') as fp_in:
+        with open(result_json_path,'r') as fp_in:
             fp_out.write(fp_in.read())
-
-# def save_epi_result(outfile_path):
-#     with open(outfile_path,'a') as fp_out:
-#         with open(EPI_SUITE_SAMPLE_RESULTS_JSON_FILEPATH,'r') as fp_in:
-#             fp_out.write(fp_in.read())        
 
 if __name__ == '__main__':
     #switch("C(Cl)Cl",True,True,False)
@@ -562,18 +574,36 @@ if __name__ == '__main__':
     # TEST_SAMPLE_RESULTS_JSON_FILEPATH =  os.path.normpath(os.path.join(DIR_PATH + "/test_file/for_testing/temp_result_" + UUID + "/test_results.json"))
     # DEFAULT_JSON_OUTPUT_FILEPATH =  os.path.normpath(DIR_PATH + "/QSAR_summay_sample.json")
 
-    if len(sys.argv) == 7:
-        switch(sys.argv[1],eval(sys.argv[2]),eval(sys.argv[3]),eval(sys.argv[4]),sys.argv[5],sys.argv[6])
-        print("switch finished")
+    # if len(sys.argv) == 7:
+    #     switch(sys.argv[1],eval(sys.argv[2]),eval(sys.argv[3]),eval(sys.argv[4]),sys.argv[5],sys.argv[6])
+    #     print("switch finished")
 
-    if len(sys.argv) == 8:
-        switch(sys.argv[1],eval(sys.argv[2]),eval(sys.argv[3]),eval(sys.argv[4]),sys.argv[5],sys.argv[6])
-        print("switch finished")
-        save_test_result(sys.argv[7])
+    # if len(sys.argv) == 8:
+    #     switch(sys.argv[1],eval(sys.argv[2]),eval(sys.argv[3]),eval(sys.argv[4]),sys.argv[5],sys.argv[6])
+    #     print("switch finished")
+    #     save_test_result(sys.argv[7])
     
     # production
     if len(sys.argv) == 5:
-        switch(sys.argv[1],eval(sys.argv[2]),eval(sys.argv[3]),eval(sys.argv[4]),'uuid',"1")
+        switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),"1")
+    
+    if len(sys.argv) == 6:
+        switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt=sys.argv[5])
+    
+    if len(sys.argv) == 7:
+        switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt=sys.argv[5],
+               epi_batch_path=sys.argv[6],vega_batch_path=None,test_batch_path=None)
+
+    if len(sys.argv) == 8:
+        switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt=sys.argv[5],
+               epi_batch_path=sys.argv[6],vega_batch_path=sys.argv[7],test_batch_path=None))
+
+    if len(sys.argv) == 9:
+        switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt=sys.argv[5],
+               epi_batch_path=sys.argv[6],vega_batch_path=sys.argv[7],test_batch_path=sys.argv[8]))
+        # save_test_result(sys.argv[6])
+        # save_vega_result(sys.argv[7])
+        
         # python switch.py CC False True False
     #switch("CC",False,True,False,test_opt)
     #switch("C(Cl)Cl",True,False,False,test_opt)
