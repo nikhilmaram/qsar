@@ -450,7 +450,7 @@ def switch(smiles,epi,vega,test,test_opt="1",
     SMILES_MD5 = md5.hexdigest()
     
     print(epi,vega,test)
-    print(testopt,type(testopt))
+    print(test_opt,type(test_opt))
     # create temporary directory for current smiles
     # TEMP_DIR_PATH: runtime temp files
     # RESULT_JSON_FOLDER: 1. json for each model 2. combined json
@@ -521,7 +521,7 @@ def switch(smiles,epi,vega,test,test_opt="1",
     test_time = time.time()
 
     if test:
-        TEST_batch_allEndpoints(PATH_DICT["TEST_SMILES_PATH"],PATH_DICT["TEST_RESULT_PATH"],testopt)
+        TEST_batch_allEndpoints(PATH_DICT["TEST_SMILES_PATH"],PATH_DICT["TEST_RESULT_PATH"],test_opt)
         print("{0} process used".format(cpu_count()))
         print("TEST used {0} seconds to complete.".format(time.time()-test_time))
     else:
@@ -568,7 +568,7 @@ def save_json_to_bath_json(result_json_path,outfile_path):
 
 if __name__ == '__main__':
     #switch("C(Cl)Cl",True,True,False)
-    #testopt, 1:all,0:density and orat
+    #test_opt, 1:all,0:density and orat
     # EPI_SUITE_SAMPLE_RESULTS_JSON_FILEPATH = os.path.normpath(DIR_PATH + "/episuite_file/epibat.json")
     # VEGA_SAMPLE_RESULTS_JSON_FILEPATH = os.path.normpath(DIR_PATH + "/vega_file/result_test.json")
     # TEST_SAMPLE_RESULTS_JSON_FILEPATH =  os.path.normpath(os.path.join(DIR_PATH + "/test_file/for_testing/temp_result_" + UUID + "/test_results.json"))
