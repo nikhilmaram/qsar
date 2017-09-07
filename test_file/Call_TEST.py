@@ -263,7 +263,7 @@ def writeJSONSummary(testResultList, smilesList, outputFolderPath):
         resultCounter += 1
 
     # write JSON to file
-    jsonOutputPath = os.path.join(outputFolderPath, "test_results.json")
+    jsonOutputPath = os.path.join(outputFolderPath, "test_result.json")
     # print("Call TEST:",jsonOutputPath)
     
 
