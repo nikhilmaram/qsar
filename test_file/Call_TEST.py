@@ -236,7 +236,7 @@ def readTESTResult(resultFilePath):
     return headerRow, dataRow
 
 
-def writeJSONSummary(testResultList, smilesList, outputFolderPath):
+def writeJSONSummary(testResultList, smilesList, outputjsonPath):
     resultJsonObject = []
     resultCounter = 0
     for testResult in testResultList:		
@@ -263,11 +263,11 @@ def writeJSONSummary(testResultList, smilesList, outputFolderPath):
         resultCounter += 1
 
     # write JSON to file
-    jsonOutputPath = os.path.join(outputFolderPath, "test_results.json")
+    # jsonOutputPath = os.path.join(outputFilePath, "test_results.json")
     # print("Call TEST:",jsonOutputPath)
     
 
-    with open(jsonOutputPath, "w") as outputFile:
+    with open(outputjsonPath, "w") as outputFile:
         json.dump(resultJsonObject, outputFile,
                 sort_keys=True, indent= 4, separators=(',', ': '))
 
