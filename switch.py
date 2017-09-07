@@ -435,7 +435,7 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
             "TEST_RESULT_JSON_PATH":TEST_RESULT_JSON_PATH}
 
 # smile: string, epi,vega,test: boolean, 
-def switch(smiles,epi,vega,test,testopt="1",
+def switch(smiles,epi,vega,test,test_opt="1",
            epi_batch_path="None",vega_batch_path="None",test_batch_path="None"):
 
     # Given a MD5 hash for a smiles, create a folder that stores epi_script, vega_script
@@ -585,7 +585,7 @@ if __name__ == '__main__':
     
     # production
     if len(sys.argv) == 5:
-        switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),"1")
+        switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt="1")
     
     if len(sys.argv) == 6:
         switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt=sys.argv[5])
@@ -596,11 +596,11 @@ if __name__ == '__main__':
 
     if len(sys.argv) == 8:
         switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt=sys.argv[5],
-               epi_batch_path=sys.argv[6],vega_batch_path=sys.argv[7],test_batch_path=None))
+               epi_batch_path=sys.argv[6],vega_batch_path=sys.argv[7],test_batch_path=None)
 
     if len(sys.argv) == 9:
         switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt=sys.argv[5],
-               epi_batch_path=sys.argv[6],vega_batch_path=sys.argv[7],test_batch_path=sys.argv[8]))
+               epi_batch_path=sys.argv[6],vega_batch_path=sys.argv[7],test_batch_path=sys.argv[8])
         # save_test_result(sys.argv[6])
         # save_vega_result(sys.argv[7])
         
