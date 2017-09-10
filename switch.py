@@ -358,7 +358,7 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
         # serialize smiles for EPI-suite
         EPI_SMILES_PATH = os.path.join(epi_file_folder,"epi_smiles.txt")
         epi_smiles = open(EPI_SMILES_PATH, "w")
-        epi_smiles.write("CC\n"+smiles+"\n")
+        epi_smiles.write("CC\n"+smiles.replace("'",'')+"\n")
         epi_smiles.close()
         sep = os.sep
         # modify sikulix script and copy to temp folder
@@ -558,7 +558,7 @@ def switch(smiles,epi,vega,test,test_opt="1",
             continue
         command = "rm -rf {0}".format(file)
         # print(command)
-        os.system(command)
+        #os.system(command)
     
     # code for Pre run model
     if "NONE" not in epi_batch_path and epi:
