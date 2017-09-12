@@ -481,8 +481,10 @@ def switch(smiles,epi,vega,test,test_opt="1",
         try:
             read_epi_result_toJson(PATH_DICT["EPI_RESULT_PATH"],
                                    PATH_DICT["EPI_RESULT_JSON_PATH"])
-        except: # epi crashed
+        except Exception as e: # epi crashed
+            print(e, str(e))
             restart_episuite()
+            print("=======================\n","restart from qsar/switch.py")
             os.system("{0} -r {1}".format(os.path.join(DIR_PATH,"sikulix/runsikulix"),
                       os.path.join(TEMP_DIR_PATH,"episuite_file","epi_script.sikuli")))
             read_epi_result_toJson(PATH_DICT["EPI_RESULT_PATH"],
