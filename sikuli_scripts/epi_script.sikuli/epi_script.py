@@ -6,30 +6,16 @@ import inspect
 script_dir = os.path.dirname(os.path.abspath(
     inspect.getfile(inspect.currentframe()))
 )
-#import locater script
+
 path_array = script_dir.split(os.sep)
 del path_array[-1]
 base_script_dir = (os.sep).join(path_array)
 sys.path.insert(0, base_script_dir)
-from locater import get_locations
 Settings.TypeDelay = 0
 sys.path.pop(0)
 
-locs = get_locations()
-
 smiles_location = r'Z:\home\awsgui\Desktop\qsar\episuite_file\epi_smiles.txt'
-#destination_folder = locs['results']
-# log_file = locs['log']
 
-# if log_file:
-#     try: 
-#        log = open(log_file, 'a')
-#        log.write("Started Epi Script. Log Loaded\n")
-#     except:
-#        log = False
-
-
-import sys
 def StopSikuli(event):
     sys.exit()
 
