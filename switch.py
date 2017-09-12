@@ -470,7 +470,7 @@ def switch(smiles,epi,vega,test,test_opt="1",
     #RESULT_JSON_FOLDER = os.path.join(TEMP_DIR_PATH,'json')
     #make_dir_if_necessary(RESULT_JSON_FOLDER)
     PATH_DICT = serialize_smiles_and_generate_scripts(smiles,TEMP_DIR_PATH,epi,vega,test)
-    print(PATH_DICT)
+    #print(PATH_DICT)
 
     if epi:
         # run sikulix script to operate epi
@@ -587,7 +587,8 @@ def switch(smiles,epi,vega,test,test_opt="1",
     #outputFilePath = DEFAULT_JSON_OUTPUT_FILEPATH
     # qsar_dict = parse(epiJSON,vegaJSON,testJSON,outputFilePath)
     #return qsar_dict
-
+    print("{:.2f} GB free memory".format(float(psutil.virtual_memory().available) / (1024 * 1024 * 1024)))
+    
 def save_json_to_bath_json(result_json_path,outfile_path):
     # append output json of current smiles to the large json of 500 smiles
     with open(outfile_path,'a') as fp_out:
