@@ -21,10 +21,10 @@ DEFAULT_JSON_OUTPUT_FILEPATH = "/home/awsgui/Desktop/qsar/QSAR_summay_sample.jso
 """
 def parse(epi_json, vega_json, test_json, outputFilePath):
 	if not ensureSameLength(epi_json, vega_json, test_json):
-		print "[error] Three JSON files have different number of chemicals"
+		print("[error] Three JSON files have different number of chemicals")
 	chemicalsJson = []
 	for index in range(len(vega_json)):
-		print index
+		print(index)
 
 		#used to parse one smile at a time
 		#it reads in the information from the three files and parse them in each function
@@ -45,9 +45,19 @@ def parse(epi_json, vega_json, test_json, outputFilePath):
 
 		chemicalObj["BCF"] = parse_bcf_stat(epi_json, vega_json, index)
 		#unlog the log bcf
-		bcfmin=math.pow(10,chemicalObj["BCF"]["min"])
-		bcfmax=math.pow(10,chemicalObj["BCF"]["max"])
-		bcfavg=math.pow(10,chemicalObj["BCF"]["avg"])
+		# print("BCF:\n",chemicalObj["BCF"])
+		try:
+			bcfmin=math.pow(10,chemicalObj["BCF"]["min"])
+		except:
+			bcfmin = "N/A"
+		try:
+			bcfmax=math.pow(10,chemicalObj["BCF"]["max"])
+		except:
+			bcfmax = "N/A"
+		try:
+			bcfavg=math.pow(10,chemicalObj["BCF"]["avg"])
+		except:
+			bcfavg = "N/A"
 		chemicalObj["BCF"]["min"]=bcfmin
 		chemicalObj["BCF"]["max"]=bcfmax
 		chemicalObj["BCF"]["avg"]=bcfavg
@@ -2545,7 +2555,7 @@ def getgeoStat(valueList, note, source, unit):
 		# note: if any valid value avaialbe, we do not take into account of "N/A"
 		valueList = filter(lambda lbd: lbd != "N/A", valueList)
 	stat = {}
-	print ",,,", valueList
+	print(",,,", valueList)
 	U = reduce(lambda x, y: x*y, valueList)**(1.0/len(valueList))
 	stat["mean"] = U
 	stat["min"] = min(valueList)
