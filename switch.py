@@ -474,9 +474,12 @@ def switch(smiles,epi,vega,test,test_opt="1",
             read_epi_result_toJson(PATH_DICT["EPI_RESULT_PATH"],
                                    PATH_DICT["EPI_RESULT_JSON_PATH"])
         except: # epi crashed
+            # kill crashed epi
+            os.system("kill $(ps -aux | grep 'EpiWeb1.exe' |  awk '{print $2}')")
+            time.sleep(1)
             # restart epi
             os.system("cd ~/.wine/drive_c/EPISUITE41; wine EpiWeb1.exe&")
-            time.sleep(5)
+            time.sleep(3)
             os.system("{0} -r {1}".format(os.path.join(DIR_PATH,"sikulix/runsikulix"),
                       os.path.join(TEMP_DIR_PATH,"episuite_file","epi_script.sikuli")))
             read_epi_result_toJson(PATH_DICT["EPI_RESULT_PATH"],
@@ -587,22 +590,8 @@ def save_json_to_bath_json(result_json_path,outfile_path):
             fp_out.write(fp_in.read())
 
 if __name__ == '__main__':
-    #switch("C(Cl)Cl",True,True,False)
     #test_opt, 1:all,0:density and orat
-    # EPI_SUITE_SAMPLE_RESULTS_JSON_FILEPATH = os.path.normpath(DIR_PATH + "/episuite_file/epibat.json")
-    # VEGA_SAMPLE_RESULTS_JSON_FILEPATH = os.path.normpath(DIR_PATH + "/vega_file/result_test.json")
-    # TEST_SAMPLE_RESULTS_JSON_FILEPATH =  os.path.normpath(os.path.join(DIR_PATH + "/test_file/for_testing/temp_result_" + UUID + "/test_results.json"))
-    # DEFAULT_JSON_OUTPUT_FILEPATH =  os.path.normpath(DIR_PATH + "/QSAR_summay_sample.json")
 
-    # if len(sys.argv) == 7:
-    #     switch(sys.argv[1],eval(sys.argv[2]),eval(sys.argv[3]),eval(sys.argv[4]),sys.argv[5],sys.argv[6])
-    #     print("switch finished")
-
-    # if len(sys.argv) == 8:
-    #     switch(sys.argv[1],eval(sys.argv[2]),eval(sys.argv[3]),eval(sys.argv[4]),sys.argv[5],sys.argv[6])
-    #     print("switch finished")
-    #     save_test_result(sys.argv[7])
-    
     # production
     if len(sys.argv) == 5:
         switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt="1")
@@ -621,9 +610,6 @@ if __name__ == '__main__':
     if len(sys.argv) == 9:
         switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt=sys.argv[5],
                epi_batch_path=sys.argv[6],vega_batch_path=sys.argv[7],test_batch_path=sys.argv[8])
-        # save_test_result(sys.argv[6])
-        # save_vega_result(sys.argv[7])
-        
         # python switch.py CC False True False
     #switch("CC",False,True,False,test_opt)
     #switch("C(Cl)Cl",True,False,False,test_opt)
