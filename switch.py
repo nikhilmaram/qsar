@@ -435,6 +435,14 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
             "TEST_RESULT_PATH":TEST_RESULT_PATH,
             "TEST_RESULT_JSON_PATH":TEST_RESULT_JSON_PATH}
 
+def restart_episuite():
+    # kill crashed epi
+    os.system("kill $(ps -aux | grep 'EpiWeb1.exe' |  awk '{print $2}')")
+    time.sleep(1)
+    # restart epi
+    os.system("cd ~/.wine/drive_c/EPISUITE41; wine EpiWeb1.exe&")
+    time.sleep(3)
+
 # smile: string, epi,vega,test: boolean, 
 def switch(smiles,epi,vega,test,test_opt="1",
            epi_batch_path="None",vega_batch_path="None",test_batch_path="None"):
@@ -474,12 +482,7 @@ def switch(smiles,epi,vega,test,test_opt="1",
             read_epi_result_toJson(PATH_DICT["EPI_RESULT_PATH"],
                                    PATH_DICT["EPI_RESULT_JSON_PATH"])
         except: # epi crashed
-            # kill crashed epi
-            os.system("kill $(ps -aux | grep 'EpiWeb1.exe' |  awk '{print $2}')")
-            time.sleep(1)
-            # restart epi
-            os.system("cd ~/.wine/drive_c/EPISUITE41; wine EpiWeb1.exe&")
-            time.sleep(3)
+            restart_episuite()
             os.system("{0} -r {1}".format(os.path.join(DIR_PATH,"sikulix/runsikulix"),
                       os.path.join(TEMP_DIR_PATH,"episuite_file","epi_script.sikuli")))
             read_epi_result_toJson(PATH_DICT["EPI_RESULT_PATH"],
