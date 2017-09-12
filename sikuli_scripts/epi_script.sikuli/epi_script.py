@@ -2,7 +2,7 @@ import sys
 import datetime
 import os
 import inspect
-
+import time
 script_dir = os.path.dirname(os.path.abspath(
     inspect.getfile(inspect.currentframe()))
 )
@@ -22,11 +22,13 @@ def StopSikuli(event):
 #Env.addHotkey(Key.F2, KEY_CTRL, StopSikuli)
 
 
-App.focus("Epiweb1")
-hover(Location(1,1))
+#App.focus("Epiweb1")
+#hover(Location(1,1))
 hover(Location(10,10))
 click("Selection_001.png")
-click("Selection_002.png")
+time.sleep(0.5)
+#click("Selection_002.png")
+type(Key.F5)
 wait("Selection_003.png",10)
 click("Selection_003-1.png")
 wait("Selection_004.png", 10)
