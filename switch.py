@@ -381,7 +381,7 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
             # modify output file path (history/md5/epibat.out) for episuite 
             orig_epi_out_path_str = "Z:\home\\awsgui\Desktop\qsar\episuite_file\epibat.out"
             EPI_RESULT_PATH = os.path.join(epi_file_folder,"epibat.out")
-            epi_out_win_path = EPI_RESULT_PATH.replace("/home","Z:\\home").replace("/","\\")
+            epi_out_win_path = epi_file_folder.replace("/home","Z:\\home").replace("/","\\")+"\\\\"
             sikuli_template = sikuli_template.replace(orig_epi_out_path_str,epi_out_win_path)
             
             # save modified sikuli script to temp folder
@@ -470,9 +470,17 @@ def switch(smiles,epi,vega,test,test_opt="1",
         # This command assumes a symlink to runsikulix have been created
         os.system("{0} -r {1}".format(os.path.join(DIR_PATH,"sikulix/runsikulix"),
                                       os.path.join(TEMP_DIR_PATH,"episuite_file","epi_script.sikuli")))
-        
-        read_epi_result_toJson(PATH_DICT["EPI_RESULT_PATH"],
-                               PATH_DICT["EPI_RESULT_JSON_PATH"])
+        try:
+            read_epi_result_toJson(PATH_DICT["EPI_RESULT_PATH"],
+                                   PATH_DICT["EPI_RESULT_JSON_PATH"])
+        except: # epi crashed
+            # restart epi
+            os.system("cd ~/.wine/drive_c/EPISUITE41; wine EpiWeb1.exe&")
+            time.sleep(5)
+            os.system("{0} -r {1}".format(os.path.join(DIR_PATH,"sikulix/runsikulix"),
+                      os.path.join(TEMP_DIR_PATH,"episuite_file","epi_script.sikuli")))
+            read_epi_result_toJson(PATH_DICT["EPI_RESULT_PATH"],
+                                   PATH_DICT["EPI_RESULT_JSON_PATH"])
         # os.system("python " +DIR_PATH+ "/episuite_file/parse_episuite.py")
         #os.system("rm "+dir_path+"/episuite_file/epibat.out")
         print("EPI used {} seconds to complete.".format(time.time()-epi_time))
