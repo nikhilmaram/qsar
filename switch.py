@@ -15,14 +15,14 @@ from vega_file import Call_VEGA
 import subprocess
 import re
 import uuid 
-import hashlib
+import hashlib, psutil
 from episuite_file.parse_episuite import read_epi_result_toJson
 from vega_file.parse_vega import read_vega_result_toJSON
 from test_file.Call_TEST import TEST_batch_allEndpoints, readTESTResult
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
-def readJSON(jsonFilePath):
+def read_json(jsonFilePath):
     with open(jsonFilePath) as jsonFile:
         jsonData = json.load(jsonFile)
         # pprint(jsonData)
@@ -424,6 +424,7 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
     EPI_RESULT_JSON_PATH = os.path.join(temp_dir_path,'epi_result.json')
     VEGA_RESULT_JSON_PATH = os.path.join(temp_dir_path,'vega_result.json')
     TEST_RESULT_JSON_PATH = os.path.join(temp_dir_path,'test_result.json')
+    COMBINED_RESULT_JSON_PATH = os.path.join(temp_dir_path,'qsar_summary.json')
     
     return {"EPI_SCRIPT_PATH":EPI_SCRIPT_PATH,
             "EPI_RESULT_PATH":EPI_RESULT_PATH,
@@ -433,7 +434,8 @@ def serialize_smiles_and_generate_scripts(smiles,temp_dir_path,epi,vega,test):
             "VEGA_RESULT_JSON_PATH":VEGA_RESULT_JSON_PATH,
             "TEST_SMILES_PATH":TEST_SMILES_PATH,
             "TEST_RESULT_PATH":TEST_RESULT_PATH,
-            "TEST_RESULT_JSON_PATH":TEST_RESULT_JSON_PATH}
+            "TEST_RESULT_JSON_PATH":TEST_RESULT_JSON_PATH,
+            "COMBINED_RESULT_JSON_PATH":COMBINED_RESULT_JSON_PATH}
 
 def restart_episuite():
     # kill crashed epi
@@ -471,7 +473,7 @@ def switch(smiles,epi,vega,test,test_opt="1",
     #make_dir_if_necessary(RESULT_JSON_FOLDER)
     PATH_DICT = serialize_smiles_and_generate_scripts(smiles,TEMP_DIR_PATH,epi,vega,test)
     #print(PATH_DICT)
-
+    epiJSON = None
     if epi:
         # run sikulix script to operate epi
         epi_time = time.time()
@@ -497,13 +499,13 @@ def switch(smiles,epi,vega,test,test_opt="1",
         currentepi=epinone
         currentepi["SMILES"]=smiles
 
-        resultJsonObject=[currentepi]
-
+        epiJSON=[currentepi]
+        
         jsonOutputPath = PATH_DICT["EPI_RESULT_JSON_PATH"]#os.path.join(DIR_PATH,"episuite_file/epibat.json"))
         with open(jsonOutputPath, "w") as outputFile:
-            json.dump(resultJsonObject, outputFile,
+            json.dump(epiJSON, outputFile,
                     sort_keys=True, indent= 4, separators=(',', ': '))
-
+    vegaJSON = None
     #vega switch to turn on or off
     if vega:
         vega_time = time.time()
@@ -528,7 +530,7 @@ def switch(smiles,epi,vega,test,test_opt="1",
         currentvega=veganone
         currentvega["SMILES"]=smiles
 
-        resultJsonObject = [currentvega]
+        vegaJSON = [currentvega]
         
         #output the result
         with open(jsonOutputPath, "w") as outputFile:
@@ -538,14 +540,14 @@ def switch(smiles,epi,vega,test,test_opt="1",
 
     #test switch to turn on or off
     test_time = time.time()
-
+    testJSON = None
     if test:
         TEST_batch_allEndpoints(PATH_DICT["TEST_SMILES_PATH"],TEMP_DIR_PATH,test_opt)
         print("{0} process used".format(cpu_count()))
         print("TEST used {0} seconds to complete.".format(time.time()-test_time))
     else:
         # if json results already exists, there's no need to replace it with an N/A json
-        jsonOutputPath = os.path.join(DIR_PATH,'test_result.json')#os.path.join(DIR_PATH,"test_file/for_testing/temp_result2/test_results.json"))
+        jsonOutputPath = PATH_DICT["TEST_RESULT_JSON_PATH"]#os.path.join(DIR_PATH,'test_result.json')#os.path.join(DIR_PATH,"test_file/for_testing/temp_result2/test_results.json"))
         if os.path.exists(jsonOutputPath):
             pass
         #create the empty test component if switch is off
@@ -556,40 +558,48 @@ def switch(smiles,epi,vega,test,test_opt="1",
 
         currenttest["Smiles"]=smiles
 
-        resultJsonObject = [currenttest]
+        testJSON = [currenttest]
 
         #output the result
+        print("-------------test.json")
         with open(jsonOutputPath, "w") as outputFile:
-            json.dump(resultJsonObject, outputFile,
+            json.dump(testJSON, outputFile,
                     sort_keys=True, indent= 4, separators=(',', ': '))
             # To save space on clusters, we will condense json on one line
             # json.dump(resultJsonObject, outputFile)
 
     print(smiles)
     # delete stuff in temp folder except json
-    temp_files = set([os.path.join(TEMP_DIR_PATH,folder) for folder in os.listdir(TEMP_DIR_PATH)])
+    #temp_files = set([os.path.join(TEMP_DIR_PATH,folder) for folder in os.listdir(TEMP_DIR_PATH)])
     # temp_files.remove(os.path.join(TEMP_DIR_PATH,'json'))
-    for file in temp_files:
-        if '.json' in file:
-            continue
-        command = "rm -rf {0}".format(file)
-        # print(command)
-        #os.system(command)
+    #for file in temp_files:
+    #    if '.json' in file:
+    #        continue
+    #    command = "rm -rf {0}".format(file)
+    #    # print(command)
+    #    #os.system(command)
     
     # code for Pre run model
     if "NONE" not in epi_batch_path and epi:
-        save_json_to_bath_json(PATH_DICT["EPI_RESULT_JSON_PATH"],epi_batch_path)
+        save_json_to_batch_json(PATH_DICT["EPI_RESULT_JSON_PATH"],epi_batch_path)
     if "NONE" not in vega_batch_path and vega:
-        save_json_to_bath_json(PATH_DICT["VEGA_RESULT_JSON_PATH"],vega_batch_path)
+        save_json_to_batch_json(PATH_DICT["VEGA_RESULT_JSON_PATH"],vega_batch_path)
     if "NONE" not in test_batch_path and test:
-        save_json_to_bath_json(PATH_DICT["TEST_RESULT_JSON_PATH"],test_batch_path)
+        save_json_to_batch_json(PATH_DICT["TEST_RESULT_JSON_PATH"],test_batch_path)
 
     #outputFilePath = DEFAULT_JSON_OUTPUT_FILEPATH
-    # qsar_dict = parse(epiJSON,vegaJSON,testJSON,outputFilePath)
-    #return qsar_dict
-    print("{:.2f} GB free memory".format(float(psutil.virtual_memory().available) / (1024 * 1024 * 1024)))
+    if epi:
+        epiJSON = read_json(PATH_DICT["EPI_RESULT_JSON_PATH"])
+    if vega:
+        vegaJSON = read_json(PATH_DICT["VEGA_RESULT_JSON_PATH"])
+    if test:
+        testJSON = read_json(PATH_DICT["TEST_RESULT_JSON_PATH"])
     
-def save_json_to_bath_json(result_json_path,outfile_path):
+    print("{:.2f} GB free memory".format(float(psutil.virtual_memory().available) / (1024 * 1024 * 1024)))
+    qsar_dict = parse(epiJSON,vegaJSON,testJSON,PATH_DICT["COMBINED_RESULT_JSON_PATH"])
+    return qsar_dict
+
+def save_json_to_batch_json(result_json_path,outfile_path):
     # append output json of current smiles to the large json of 500 smiles
     with open(outfile_path,'a') as fp_out:
         with open(result_json_path,'r') as fp_in:
