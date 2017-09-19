@@ -805,11 +805,20 @@ def parse_mw_stat(epi_json, index):
 	  TEST
 """
 def parse_density_stat(test_json, index):
-	md = [test_json[index][u"Density  Exp_Value:g/cm\u00b3  C"]]
+        try:
+	    md = [test_json[index]['Density  Exp_Value:g/cm\xc2\xb3  C']]
+        except:
+            for key in test_json[index].keys():
+                if "Density" in key:
+                    print(key,u"\n")
+            print("----------------")
+            print(u"Density  Exp_Value:g/cm\u00b3  C",u"\n")
+            print("-------------\n")
+            exit(1)
 	md = floatList(md)
 	md_stat = getStat(md, "exp", "TEST", u"g/cm3")
 	if md_stat["average"] == "N/A":
-		md = [test_json[index][u"Density  Pred_Value:g/cm\u00b3  C"]]
+		md = [test_json[index]['Density  Pred_Value:g/cm\xc2\xb3  C']]
 		md = floatList(md)
 		md_stat = getStat(md, "medium", "TEST", u"g/cm3")
 	return md_stat
@@ -1137,7 +1146,7 @@ def parse_vp_stat(epi_json, test_json, index):
 	vp_epi_exp = floatList(vp_epi_exp)
 	vp_epi_exp = mmhg_to_pa(vp_epi_exp)
 	try:
-		vp_test_exp = [test_json[index][u"Vapor pressure at 25\u00b0C  Exp_Value:mmHg"]]
+		vp_test_exp = [test_json[index]['Vapor pressure at 25\xc2\xb0C  Exp_Value:mmHg']]
 	except:
 		print(test_json[index])
 	vp_test_exp = floatList(vp_test_exp)
@@ -1155,7 +1164,7 @@ def parse_vp_stat(epi_json, test_json, index):
 		vp_epi_est = [epi_json[index]["VP  mmHg  est"]]
 		vp_epi_est = floatList(vp_epi_est)
 		vp_epi_est = mmhg_to_pa(vp_epi_est)
-		vp_test_est = [test_json[index][u"Vapor pressure at 25\u00b0C  Pred_Value:mmHg"]]
+		vp_test_est = [test_json[index]['Vapor pressure at 25\xc2\xb0C  Pred_Value:mmHg']]
 		vp_test_est = floatList(vp_test_est)
 		vp_test_est = mmhg_to_pa(vp_test_est)
 		# vp_test_est = mmHgToPa(vp_test_est)
