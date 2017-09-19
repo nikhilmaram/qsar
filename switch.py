@@ -24,7 +24,7 @@ DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
 def readJSON(jsonFilePath):
     with open(jsonFilePath) as jsonFile:
-        jsonData = json.load(jsonFile)
+        jsonData = json.load(jsonFile,encoding="utf-8")
         # pprint(jsonData)
     return jsonData
 
