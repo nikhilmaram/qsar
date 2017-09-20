@@ -4,20 +4,27 @@ import numpy as np
 import pprint
 
 # 3 source location & 1 destination location
-EPI_SUITE_SAMPLE_RESULTS_JSON_FILEPATH = "/Users/lizehao/desktop/general/episuite_file/epibat.json"
-VEGA_SAMPLE_RESULTS_JSON_FILEPATH = "/Users/lizehao/desktop/general/vega_file/result_test.json"
-TEST_SAMPLE_RESULTS_JSON_FILEPATH = "/Users/lizehao/desktop/general/test_file/for_testing/temp_result2/test_results.json"
-DEFAULT_JSON_OUTPUT_FILEPATH = "/Users/lizehao/desktop/general/QSAR_summay_sample.json"
+#EPI_SUITE_SAMPLE_RESULTS_JSON_FILEPATH = "/Users/lizehao/desktop/general/episuite_file/epibat.json"
+#VEGA_SAMPLE_RESULTS_JSON_FILEPATH = "/Users/lizehao/desktop/general/vega_file/result_test.json"
+#TEST_SAMPLE_RESULTS_JSON_FILEPATH = "/Users/lizehao/desktop/general/test_file/for_testing/temp_result2/test_results.json"
+#DEFAULT_JSON_OUTPUT_FILEPATH = "/Users/lizehao/desktop/general/QSAR_summay_sample.json"
+EPI_SUITE_SAMPLE_RESULTS_JSON_FILEPATH = "/home/awsgui/Desktop/qsar/episuite_file/epibat.json"
+VEGA_SAMPLE_RESULTS_JSON_FILEPATH = "/home/awsgui/Desktop/qsar/vega_file/result_test.json"
+TEST_SAMPLE_RESULTS_JSON_FILEPATH = "/home/awsgui/Desktop/qsar/test_file/for_testing/temp_result2/test_results.json"
+DEFAULT_JSON_OUTPUT_FILEPATH = "/home/awsgui/Desktop/qsar/QSAR_summay_sample.json"
+
+
+
 
 """
 	parse JSON results from three QSAR models and output results as a single JSON file
 """
 def parse(epi_json, vega_json, test_json, outputFilePath):
 	if not ensureSameLength(epi_json, vega_json, test_json):
-		print "[error] Three JSON files have different number of chemicals"
+		print("[error] Three JSON files have different number of chemicals")
 	chemicalsJson = []
 	for index in range(len(vega_json)):
-		print index
+		print(index)
 
 		#used to parse one smile at a time
 		#it reads in the information from the three files and parse them in each function
@@ -27,22 +34,46 @@ def parse(epi_json, vega_json, test_json, outputFilePath):
 
 		chemicalObj["No."] = index+1
 		chemicalObj["Smiles"] = epi_json[index]["SMILES"]
+		print(chemicalObj["Smiles"])
 		chemicalObj["CAS"] = epi_json[index]["CAS"]
+
+
+		chemicalObj["aquaTox_acute"]=parse_ata_stat(epi_json,index)
 
 		chemicalObj["MW"] = parse_mw_stat(epi_json, index)
 		chemicalObj["MD"] = parse_density_stat(test_json, index)
-		chemicalObj["LogBCF"] = parse_bcf_stat(epi_json, vega_json, index)
-		chemicalObj["kOctWater"] = parse_kow_stat(epi_json, vega_json, index)
-		chemicalObj["kOrgWater"] = parse_koc_stat(epi_json, index)
-		chemicalObj["kAirWater"] = parse_kaw_stat(epi_json, index)
+
+		chemicalObj["BCF"] = parse_bcf_stat(epi_json, vega_json, index)
+		#unlog the log bcf
+		# print("BCF:\n",chemicalObj["BCF"])
+		try:
+			bcfmin=math.pow(10,chemicalObj["BCF"]["min"])
+		except:
+			bcfmin = "N/A"
+		try:
+			bcfmax=math.pow(10,chemicalObj["BCF"]["max"])
+		except:
+			bcfmax = "N/A"
+		try:
+			bcfavg=math.pow(10,chemicalObj["BCF"]["avg"])
+		except:
+			bcfavg = "N/A"
+		chemicalObj["BCF"]["min"]=bcfmin
+		chemicalObj["BCF"]["max"]=bcfmax
+		chemicalObj["BCF"]["avg"]=bcfavg
+
+
+		chemicalObj["Kow"] = parse_kow_stat(epi_json, vega_json, index)
+		chemicalObj["Koc"] = parse_koc_stat(epi_json, index)
+		chemicalObj["Kaw"] = parse_kaw_stat(epi_json, index)
 		# ########## change
-		chemicalObj["kAerAir"] = parse_kaerair_stat(epi_json, index)		
-		chemicalObj["HLDegAir"] = parse_DegAir_stat(epi_json, index)
-		chemicalObj["HLDegWater"] = parse_DegWater_stat(epi_json, index)
-		chemicalObj["HLDegSoil"] = parse_DegSoil_stat(epi_json, index)
-		chemicalObj["HLDegSed"] = parse_DegSed_stat(epi_json, index)
-		chemicalObj["HLDegAero"] = parse_DegAero_stat(epi_json, index)
-		chemicalObj["HLDegSSed"] = parse_DegSSed_stat(epi_json, index)
+		chemicalObj["Kp"] = parse_kaerair_stat(epi_json, index)		
+		chemicalObj["HLD_air"] = parse_DegAir_stat(epi_json, index)
+		chemicalObj["HL_water"] = parse_DegWater_stat(epi_json, index)
+		chemicalObj["HL_soil"] = parse_DegSoil_stat(epi_json, index)
+		chemicalObj["HL_sediment"] = parse_DegSed_stat(epi_json, index)
+		chemicalObj["HL_aer"] = parse_DegAero_stat(epi_json, index)
+		chemicalObj["HL_sussed"] = parse_DegSSed_stat(epi_json, index)
 		#chemicalObj["kOctAir"] = parse_koa_stat(epi_json, index)
 		chemicalObj["VP"] = parse_vp_stat(epi_json, test_json, index)
 		chemicalObj["WS"] = parse_ws_stat(epi_json, test_json, index)
@@ -58,7 +89,7 @@ def parse(epi_json, vega_json, test_json, outputFilePath):
 
 
 		# epi only
-		chemicalObj["kOctAir"] = parse_koctair_stat(epi_json, index)
+		chemicalObj["Koa"] = parse_koctair_stat(epi_json, index)
 
 		chemicalObj["kOH"] = parse_ohratec_stat(epi_json, index)
 		chemicalObj["OH_HL"] = parse_ohhl_stat(epi_json, index)
@@ -81,13 +112,17 @@ def parse(epi_json, vega_json, test_json, outputFilePath):
 		# chemicalObj["biodeg_MITInonlinear"] = parse_bmitinonlinear_stat(epi_json, index)
 		# chemicalObj["biodeg_anaerobic"] = parse_banaerobic_stat(epi_json, index)
 		# chemicalObj["biodeg_ready"] = parse_bready_stat(epi_json, index)
-		chemicalObj["biodeg_combine"]=parse_biodeg(epi_json,vega_json,index)
+		chemicalObj["biodeg_ready_all"]=parse_biodeg(epi_json,vega_json,index)
 
 
 		#{avg,note,source,unit}
-		ecostarlist={"fishLC50_96hr_ecosar","dmLC50_48hr_ecosar","algaeEC50_96hr_ecosar","fishChV_ecosar","dmChV_ecosar","algaeChV_ecosar","fishLC50SW_96hr_ecosar","fishChVSW_ecosar","shrimpLC50_96hr_ecosar","shrimpSWChV_ecosar","earthworm_14day_ecosar"}
-		for k in ecostarlist:
-			chemicalObj[k]=parse_ecostar_stat(epi_json, index, k)
+		ecostarend=["fish_LC50_96hr","dm_LC50_48hr","algae_EC50_96hr","fish_ChV","dm_ChV","algae_ChV","fishSW_LC50_96hr","fishSW_ChV","shrimp_LC50_96hr","shrimpSW_ChV","earthworm_14day"]
+		ecostarlist=["fishLC50_96hr_ecosar","dmLC50_48hr_ecosar","algaeEC50_96hr_ecosar","fishChV_ecosar","dmChV_ecosar","algaeChV_ecosar","fishLC50SW_96hr_ecosar","fishChVSW_ecosar","shrimpLC50_96hr_ecosar","shrimpSWChV_ecosar","earthworm_14day_ecosar"]
+
+		for i in range(len(ecostarend)):
+			a=ecostarend[i]
+			b=ecostarlist[i]
+			chemicalObj[a]=parse_ecostar_stat(epi_json, index, b)
 
 		# no change #############
 
@@ -104,21 +139,45 @@ def parse(epi_json, vega_json, test_json, outputFilePath):
 		chemicalObj["WWTair_10000hr"] = parse_totalToAir_10000hr_stat(epi_json, index)
 		chemicalObj["WWTair_EPAmethod"] = parse_totalToAir_EPAmethod_stat(epi_json, index)
 	
-		chemicalObj["fishLC50class"] = parse_fishLC50class_stat(vega_json, index)
-		chemicalObj["fishLC50"] = parse_fishLC50_stat(vega_json, index)
-		chemicalObj["fmLC50_96hr"] = parse_fmLC50_stat(vega_json, test_json, index)
-		chemicalObj["dmLC50_48hr"] = parse_dmLC50_stat(vega_json, test_json,epi_json, index)
+		chemicalObj["fish_LC50_acute_class"] = parse_fishLC50class_stat(vega_json, index)
+		chemicalObj["fish_LC50_acute"] = parse_fishLC50_stat(vega_json, index)
+		chemicalObj["fm_LC50_96hr"] = parse_fmLC50_stat(vega_json, test_json, index)
+		chemicalObj["dm_LC50_48hr"] = parse_dmLC50_stat(vega_json, test_json,epi_json, index)
 
 		chemicalObj["mutaTox"] = parse_mutaTox_stat(vega_json, test_json, index)
-		chemicalObj["carciTox"] = parse_carciTox_stat(vega_json, index)
-		chemicalObj["deveTox"] = parse_deveTox_stat(vega_json, test_json, index)
+		chemicalObj["carTox"] = parse_carciTox_stat(vega_json, index)
+		chemicalObj["devTox"] = parse_deveTox_stat(vega_json, test_json, index)
 		chemicalObj["ER"] = parse_ER_stat(vega_json, index)
 		chemicalObj["skinSensi"] = parse_skinSensi_stat(vega_json, index)
 		chemicalObj["OratLD50"] = parse_OratLD50_stat(test_json, index)
 
 
+		for currentobject in chemicalObj:
+			if currentobject!="No." and currentobject!="CAS" and currentobject!="Smiles":
+				if "avg" in chemicalObj[currentobject]:
+					chemicalObj[currentobject]["mean"] = chemicalObj[currentobject]["avg"]
+					del chemicalObj[currentobject]["avg"]
+
+					if chemicalObj[currentobject]["mean"]=="N/A":
+						chemicalObj[currentobject]["source"]="na"
+						chemicalObj[currentobject]["ss"]=0
+				
+				if "geomean" in chemicalObj[currentobject]:
+					if chemicalObj[currentobject]["geomean"]=="N/A" or chemicalObj[currentobject]["geomean"]=="na":
+						chemicalObj[currentobject]["source"]="na"
+						chemicalObj[currentobject]["ss"]=0
 
 
+				if "sd" in chemicalObj[currentobject]:
+					chemicalObj[currentobject]["std"]=chemicalObj[currentobject]["sd"]
+					del chemicalObj[currentobject]["sd"]
+
+				for element in chemicalObj[currentobject]:
+					if chemicalObj[currentobject][element]=="N/A":
+						chemicalObj[currentobject][element]="na"
+			else:
+				if chemicalObj[currentobject]=="N/A":
+					chemicalObj[currentobject]="na"
 
 		# print chemicalObj["No."]
 		# print chemicalObj["Smiles"]
@@ -168,9 +227,32 @@ def parse(epi_json, vega_json, test_json, outputFilePath):
 
 	# pp = pprint.PrettyPrinter(indent=4)
 	# pp.pprint(chemicalsJson)
+	print(outputFilePath)
 	with open(outputFilePath, "w") as outputFile:
 		json.dump(chemicalsJson, outputFile, sort_keys=True, indent= 4, separators=(',', ': '))
 	return chemicalsJson
+
+
+
+def parse_ata_stat(epi_json,index):
+	value=epi_json[index]["aquaTox_acute  unitless"]
+	stat={}
+
+	if value!="N/A":
+		stat["avg"]=value
+	else:
+		stat["avg"]="N/A"
+
+	stat["note"]="est"
+	stat["source"]="EPI Suite"
+	stat["unit"]="N/A"
+	stat["min"]="N/A"
+	stat["max"]="N/A"
+	stat["ss"]=1
+	stat["sd"]="N/A"
+	return stat
+
+
 
 
 """
@@ -222,33 +304,50 @@ def parse_tc_stat(test_json, index):
 	Boiling Point
 	EPI Suite & T.E.S.T
 """
+def c_to_k(origin):
+	thislist=list()
+	print(origin)
+	for i in origin:
+		if i!="N/A":
+			a=i+273.15
+			thislist.append(a)
+		else:
+			thislist.append(i)
+	return thislist
+
+
+
 def parse_bp_stat(epi_json, test_json, index):
 	# first look at the experimental data
 	vp_epi_exp = [epi_json[index]["BP  C  exp"]]
 	vp_epi_exp = floatList(vp_epi_exp)
+	#vp_epi_exp = c_to_k(vp_epi_exp)
 	vp_test_exp = [test_json[index][u"Normal boiling point  Exp_Value:\u00b0C"]]
 	vp_test_exp = floatList(vp_test_exp)
+	#vp_test_exp = c_to_k(vp_test_exp)
 	# vp_test_exp = mmHgToPa(vp_test_exp)
 	if vp_epi_exp[0] != "N/A" and vp_test_exp[0] != "N/A":
 		vp_exp = [vp_epi_exp[0], vp_test_exp[0]]
-		return getStat(vp_exp, "exp", "EPI & TEST", "C")
+		return getStat(vp_exp, "exp", "EPI Suite & TEST", "C")
 	elif vp_epi_exp[0] != "N/A":
-		return getStat(vp_epi_exp, "exp", "EPI", "C")
+		return getStat(vp_epi_exp, "exp", "EPI Suite", "C")
 	elif vp_test_exp[0] != "N/A":
 		return getStat(vp_test_exp, "exp", "TEST", "C")
 	else:
 		# then estimation data
 		vp_epi_est = [epi_json[index]["BP  C  est"]]
 		vp_epi_est = floatList(vp_epi_est)
+		#vp_epi_est = c_to_k(vp_epi_est)
 		vp_test_est = [test_json[index][u"Normal boiling point  Pred_Value:\u00b0C"]]
 		vp_test_est = floatList(vp_test_est)
+		#vp_test_est = c_to_k(vp_test_est)
 		# vp_test_est = mmHgToPa(vp_test_est)
 		if (vp_epi_est[0] != "N/A" and vp_test_est[0] != "N/A") \
 			or (vp_epi_est[0] == "N/A" and vp_test_est[0] == "N/A"):
 			vp_est = [vp_epi_est[0], vp_test_est[0]]
-			return getStat(vp_est, "est", "EPI & TEST", "C")
+			return getStat(vp_est, "est", "EPI Suite & TEST", "C")
 		elif vp_epi_est[0] != "N/A":
-			return getStat(vp_epi_est, "est", "EPI", "C")
+			return getStat(vp_epi_est, "est", "EPI Suite", "C")
 		elif vp_test_est[0] != "N/A":
 			return getStat(vp_test_est, "est", "TEST", "C")
 
@@ -265,9 +364,9 @@ def parse_mp_stat(epi_json, test_json, index):
 	# vp_test_exp = mmHgToPa(vp_test_exp)
 	if vp_epi_exp[0] != "N/A" and vp_test_exp[0] != "N/A":
 		vp_exp = [vp_epi_exp[0], vp_test_exp[0]]
-		return getStat(vp_exp, "exp", "EPI & TEST", "C")
+		return getStat(vp_exp, "exp", "EPI Suite & TEST", "C")
 	elif vp_epi_exp[0] != "N/A":
-		return getStat(vp_epi_exp, "exp", "EPI", "C")
+		return getStat(vp_epi_exp, "exp", "EPI Suite", "C")
 	elif vp_test_exp[0] != "N/A":
 		return getStat(vp_test_exp, "exp", "TEST", "C")
 	else:
@@ -280,9 +379,9 @@ def parse_mp_stat(epi_json, test_json, index):
 		if (vp_epi_est[0] != "N/A" and vp_test_est[0] != "N/A") \
 			or (vp_epi_est[0] == "N/A" and vp_test_est[0] == "N/A"):
 			vp_est = [vp_epi_est[0], vp_test_est[0]]
-			return getStat(vp_est, "est", "EPI & TEST", "C")
+			return getStat(vp_est, "est", "EPI Suite & TEST", "C")
 		elif vp_epi_est[0] != "N/A":
-			return getStat(vp_epi_est, "est", "EPI", "C")
+			return getStat(vp_epi_est, "est", "EPI Suite", "C")
 		elif vp_test_est[0] != "N/A":
 			return getStat(vp_test_est, "est", "TEST", "C")
 
@@ -299,7 +398,7 @@ def parse_kaerair_stat(epi_json, index):
 		mw.append(float(mw1))
 	if mw2 != "N/A":
 		mw.append(float(mw2))
-	return getStat(mw, "est", "EPI", "m3/ug")
+	return getStat(mw, "est", "EPI Suite", "m3/ug")
 
 """
 	Atmospheric Oxidation - OH Rate Constant
@@ -309,7 +408,7 @@ def parse_ohratec_stat(epi_json, index):
 	mw = epi_json[index]["kOH  cm3/molecule-sec"]
 	if mw != "N/A":
 		mw = float(mw)
-	return getStat([mw], "est", "EPI", "cm3/molecule-sec")
+	return getStat([mw], "est", "EPI Suite", "cm3/molecule-sec")
 
 """
 	Atmospheric Oxidation - OH halflife
@@ -319,23 +418,42 @@ def parse_ohhl_stat(epi_json, index):
 	mw = epi_json[index]["OH_HL  days"]
 	if mw != "N/A":
 		mw = float(mw)
-	return getStat([mw], "est", "EPI", "days")
+	return getStat([mw], "est", "EPI Suite", "days")
 
 """
 	Henry's Law Constant
 		EPI Suite
 """
+
+def pa_to_atm(origin):
+	thislist=list()
+	for i in origin:
+		if i!="N/A":
+			a=i*0.00000986923
+			thislist.append(a)
+		else:
+			thislist.append(i)
+	return thislist
+
 def parse_hlc_stat(epi_json, index):
+	expvalue=[epi_json[index]["HLC  Pa-m3/mole  exp"]]
 	mw = [epi_json[index]["HLC  Pa-m3/mole  Bond"],epi_json[index]["HLC  Pa-m3/mole  Group"]]
-	if mw[0] != "N/A" and mw[1] !="N/A":
+	if expvalue[0]!="N/A":
+		mw=floatList(expvalue)
+		mw = pa_to_atm(mw)
+		return getStat(mw, "exp", "EPI Suite", "atm-m3/mole")
+	elif mw[0] != "N/A" and mw[1] !="N/A":
 		mw = floatList(mw)
+		mw = pa_to_atm(mw)
 	elif mw[0] != "N/A":
 		mw=[epi_json[index]["HLC  Pa-m3/mole  Bond"]]
 		mw = floatList(mw)
+		mw = pa_to_atm(mw)
 	elif mw[1] != "N/A":
 		mw=[epi_json[index]["HLC  Pa-m3/mole  Group"]]
 		mw = floatList(mw)
-	return getStat(mw, "est", "EPI", "Pa-m3/mole")
+		mw = pa_to_atm(mw)
+	return getStat(mw, "est", "EPI Suite", "atm-m3/mole")
 
 """
 	Hydrocarbon biodegradation half life
@@ -345,13 +463,13 @@ def parse_biohchl_stat(epi_json, index):
 	mw = epi_json[index]["bioHC_HL  days"]
 	if mw != "N/A":
 		mw = float(mw)
-	return getStat([mw], "est", "EPI", "days")
+	return getStat([mw], "est", "EPI Suite", "days")
 
 def parse_biohl_stat(epi_json, index):
 	mw = epi_json[index]["bio_HL  days"]
 	if mw != "N/A":
 		mw = float(mw)
-	return getStat([mw], "est", "EPI", "days")
+	return getStat([mw], "est", "EPI Suite", "days")
 
 """
 	Aqueous Base/Acid-catalyzed Hydrolysis - Rate Constant (pH > 8)
@@ -361,7 +479,7 @@ def parse_kbratec_stat(epi_json, index):
 	mw = epi_json[index]["Kb_rateC  L/mol-sec"]
 	if mw != "N/A":
 		mw = float(mw)
-	return getStat([mw], "est", "EPI", "L/mol-sec")
+	return getStat([mw], "est", "EPI Suite", "L/mol-sec")
 
 """
 	Aqueous Base/Acid-catalyzed Hydrolysis - halflife (pH = 8)
@@ -371,7 +489,7 @@ def parse_kbhlph8_stat(epi_json, index):
 	mw = epi_json[index]["Kb_HL_pH8  days"]
 	if mw != "N/A":
 		mw = float(mw)
-	return getStat([mw], "est", "EPI", "days")
+	return getStat([mw], "est", "EPI Suite", "days")
 
 """
 	Aqueous Base/Acid-catalyzed Hydrolysis - halflife (pH = 7)
@@ -381,7 +499,7 @@ def parse_kbhlph7_stat(epi_json, index):
 	mw = epi_json[index]["Kb_HL_pH7  days"]
 	if mw != "N/A":
 		mw = float(mw)
-	return getStat([mw], "est", "EPI", "days")
+	return getStat([mw], "est", "EPI Suite", "days")
 
 
 """
@@ -392,7 +510,7 @@ def parse_biotranshl_stat(epi_json, index):
 	mw = epi_json[index]["biotrans_HL  days"]
 	if mw != "N/A":
 		mw = float(mw)
-	return getStat([mw], "est", "EPI", "days")
+	return getStat([mw], "est", "EPI Suite", "days")
 
 
 # """
@@ -424,8 +542,12 @@ def parse_bultimate_stat(epi_json, index):
 	stat={}
 	stat["avg"]=mw
 	stat["note"]="est"
-	stat["source"]="EPI"
+	stat["source"]="EPI Suite"
 	stat["unit"]="N/A"
+	stat["min"]="N/A"
+	stat["max"]="N/A"
+	stat["ss"]=1
+	stat["sd"]="N/A"
 	return stat
 
 """
@@ -437,8 +559,12 @@ def parse_bprimary_stat(epi_json, index):
 	stat={}
 	stat["avg"]=mw
 	stat["note"]="est"
-	stat["source"]="EPI"
+	stat["source"]="EPI Suite"
 	stat["unit"]="N/A"
+	stat["min"]="N/A"
+	stat["max"]="N/A"
+	stat["ss"]=1
+	stat["sd"]="N/A"
 	return stat
 
 # """
@@ -492,15 +618,43 @@ def parse_biodeg(epi_json,vega_json,index):
 	emnonlinear = epi_json[index]["biodeg_MITInonlinear  unitless"]
 	eready = epi_json[index]["biodeg_ready  unitless"]
 	ea = epi_json[index]["biodeg_anaerobic  unitless"]
+	stat={}
 
+	vexp=vega_json[index]["Ready Biodegradability model (IRFMN) - experimental value"]
 	va=vega_json[index]["Ready Biodegradability model (IRFMN) - assessment"]
 
+	if vexp!="N/A":
+		vep=0
+		ven=0
+		venotc=0
+
+		if "Possible" in vexp or "Not predicted" in vexp:
+			venotc += 1
+			stat["avg"]="not classifiable"
+		elif "NON" in vexp or "Inactive" in vexp:
+			ven += 1
+			stat["avg"]="negative"
+		else:
+			vep += 1
+			stat["avg"]="positive"
+
+		stat["num_p"]=vep
+		stat["num_n"]=ven
+		stat["num_nc"]=venotc
+		stat["ss"]=1
+		stat["note"]="exp"
+		stat["unit"]="N/A"
+		return stat
+
 	if va!="N/A":
+		stat["source"]="VEGA & EPI Suite"
 		if "high" in va:
 			if "Non" in va:
 				eready="No"
 			else:
 				eready="Yes"
+	else:
+		stat["source"]="EPI Suite"
 
 	p=0
 	n=0
@@ -525,15 +679,16 @@ def parse_biodeg(epi_json,vega_json,index):
 			avg="positive"
 		elif n>p:
 			avg="negative"
-	stat={}
 
 	stat["avg"]=avg
 	if p==0 and n==0:
 		stat["avg"]="N/A"
-	stat["num_p"]=str(p)
-	stat["num_n"]=str(n)
-	stat["num_nc"]=str(notc)
-	stat["ss"]=str(s)
+	stat["num_p"]=p
+	stat["num_n"]=n
+	stat["num_nc"]=notc
+	stat["ss"]=s
+	stat["note"]="est"
+	stat["unit"]="N/A"
 
 	return stat
 
@@ -557,7 +712,7 @@ def parse_ecostar_stat(epi_json, index, name):
 		mw.append(float(mw1))
 
 
-	return getStat(mw,"est","EPI","mg/L")
+	return getgeoStat(mw,"est","EPI Suite","mg/L")
 
 
 
@@ -571,7 +726,7 @@ def parse_mw_stat(epi_json, index):
 	mw = epi_json[index]["MW  g/mol"]
 	if mw != "N/A":
 		mw = float(mw)
-	return getStat([mw], "N/A", "EPI", "g/mol")
+	return getStat([mw], "N/A", "EPI Suite", "g/mol")
 
 
 """
@@ -579,19 +734,13 @@ def parse_mw_stat(epi_json, index):
 	  TEST
 """
 def parse_density_stat(test_json, index):
-	md = [test_json[index][u"Density  Exp_Value:g/cm\u00b3  FDA"],
-			test_json[index][u"Density  Exp_Value:g/cm\u00b3  GC"],
-			test_json[index][u"Density  Exp_Value:g/cm\u00b3  HC"],
-			test_json[index][u"Density  Exp_Value:g/cm\u00b3  NN"]]
+	md = [test_json[index][u"Density  Exp_Value:g/cm\u00b3  C"]]
 	md = floatList(md)
-	md_stat = getStat(md, "exp", "TEST", u"g/cm\u00b3")
+	md_stat = getStat(md, "exp", "TEST", u"g/cm3")
 	if md_stat["avg"] == "N/A":
-		md = [test_json[index][u"Density  Pred_Value:g/cm\u00b3  FDA"],
-					test_json[index][u"Density  Pred_Value:g/cm\u00b3  GC"],
-					test_json[index][u"Density  Pred_Value:g/cm\u00b3  HC"],
-					test_json[index][u"Density  Pred_Value:g/cm\u00b3  NN"]]
+		md = [test_json[index][u"Density  Pred_Value:g/cm\u00b3  C"]]
 		md = floatList(md)
-		md_stat = getStat(md, "est", "TEST", u"g/cm\u00b3")
+		md_stat = getStat(md, "est", "TEST", u"g/cm3")
 	return md_stat
 
 
@@ -645,7 +794,7 @@ def parse_bcf_stat(epi_json, vega_json, index):
 				else:						
 					bcf_vega_est_moderate_v.append(bcf_epi[0])
 					bcf_vega_est_moderate_v.append(bcf_epi[1])
-					bcf_vega_est_moderate_stat = getStat(bcf_vega_est_moderate_v, "est moderate", "VEGA & EPI", "L/kg wet-wt")
+					bcf_vega_est_moderate_stat = getStat(bcf_vega_est_moderate_v, "est moderate", "VEGA & EPI Suite", "L/kg wet-wt")
 					# chemicalObj["BCF"] = bcf_vega_est_moderate_stat
 					return bcf_vega_est_moderate_stat
 			else:
@@ -669,7 +818,7 @@ def parse_bcf_stat(epi_json, vega_json, index):
 					else:
 						bcf_vega_est_low_v.append(bcf_epi[0])
 						bcf_vega_est_low_v.append(bcf_epi[1])
-						bcf_vega_est_low_stat = getStat(bcf_vega_est_low_v, "est low", "VEGA & EPI", "L/kg wet-wt")
+						bcf_vega_est_low_stat = getStat(bcf_vega_est_low_v, "est low", "VEGA & EPI Suite", "L/kg wet-wt")
 						# chemicalObj["BCF"] = bcf_vega_est_low_stat
 						return bcf_vega_est_low_stat
 				else:
@@ -677,7 +826,7 @@ def parse_bcf_stat(epi_json, vega_json, index):
 					bcf_epi = [epi_json[index]["LogBCF  L/kg wet-wt  Arnot-Gobas"],
 								epi_json[index]["LogBCF  L/kg wet-wt  Regression"]]
 					bcf_epi = floatList(bcf_epi)
-					bcf_epi_est_stat = getStat(bcf_epi, "est", "EPI", "L/kg wet-wt")
+					bcf_epi_est_stat = getStat(bcf_epi, "est", "EPI Suite", "L/kg wet-wt")
 					# chemicalObj["BCF"] = bcf_epi_est_stat
 					return bcf_epi_est_stat
 	else:
@@ -705,10 +854,10 @@ def parse_kow_stat(epi_json, vega_json, index):
 		kow_exp = kow_vega_exp
 		kow_exp_vega_stat = getStat(kow_exp, "exp", "VEGA", "N/A")
 		if kow_exp_vega_stat["avg"] == "N/A":
-			kow_exp_stat = getStat(kow_epi_exp, "exp", "EPI", "N/A")
+			kow_exp_stat = getStat(kow_epi_exp, "exp", "EPI Suite", "N/A")
 		else:
 			kow_exp.append(kow_epi_exp[0])
-			kow_exp_stat = getStat(kow_exp, "exp", "VEGA & EPI", "N/A")
+			kow_exp_stat = getStat(kow_exp, "exp", "VEGA & EPI Suite", "N/A")
 	# experiment all N/A, let's check est
 	if kow_exp_stat["avg"] == "N/A":
 		# get high reliability first
@@ -747,7 +896,7 @@ def parse_kow_stat(epi_json, vega_json, index):
 					return kow_vega_est_moderate_stat
 				else:						
 					kow_vega_est_moderate_v.append(kow_epi[0])
-					kow_vega_est_moderate_stat = getStat(kow_vega_est_moderate_v, "est moderate", "VEGA & EPI", "")
+					kow_vega_est_moderate_stat = getStat(kow_vega_est_moderate_v, "est moderate", "VEGA & EPI Suite", "")
 					# chemicalObj["kOctWater"] = kow_vega_est_moderate_stat
 					return kow_vega_est_moderate_stat
 			else:
@@ -769,14 +918,14 @@ def parse_kow_stat(epi_json, vega_json, index):
 						return kow_vega_est_low_stat
 					else:
 						kow_vega_est_low_v.append(kow_epi[0])
-						kow_vega_est_low_stat = getStat(kow_vega_est_low_v, "est low", "VEGA & EPI", "N/A")
+						kow_vega_est_low_stat = getStat(kow_vega_est_low_v, "est low", "VEGA & EPI Suite", "N/A")
 						# chemicalObj["kOctWater"] = kow_vega_est_low_stat
 						return kow_vega_est_low_stat
 				else:
 					# only epi data
 					kow_epi = [epi_json[index]["kOctWater  unitless  est"]]
 					kow_epi = floatList(kow_epi)
-					kow_epi_est_stat = getStat(kow_epi, "est", "EPI", "N/A")
+					kow_epi_est_stat = getStat(kow_epi, "est", "EPI Suite", "N/A")
 					# chemicalObj["kOctWater"] = kow_epi_est_stat
 					return kow_epi_est_stat
 	else:
@@ -796,10 +945,10 @@ def parse_koc_stat(epi_json, index):
 		koc_epi_est = [epi_json[index]["kOrgWater  L/kg  Kow"],
 						epi_json[index]["kOrgWater  L/kg  MCI"]]
 		koc_epi_est = floatList(koc_epi_est)
-		koc_est_stat = getStat(koc_epi_est, "est", "EPI", "L/kg")
+		koc_est_stat = getStat(koc_epi_est, "est", "EPI Suite", "L/kg")
 		return koc_est_stat
 	else:
-		return getStat(koc_epi_exp, "exp", "EPI", "L/kg")
+		return getStat(koc_epi_exp, "exp", "EPI Suite", "L/kg")
 
 
 """
@@ -810,7 +959,7 @@ def parse_kaw_stat(epi_json, index):
 	#   only estimation data
 	kaw_epi_est = [epi_json[index]["kAirWater  unitless"]]
 	kaw_epi_est = floatList(kaw_epi_est)
-	return getStat(kaw_epi_est, "est", "EPI", "N/A")
+	return getStat(kaw_epi_est, "est", "EPI Suite", "N/A")
 
 
 """
@@ -824,10 +973,10 @@ def parse_koa_stat(epi_json, index):
 	if koa_epi_exp[0] == "N/A":
 		koa_epi_est = [epi_json[index]["kOctAir  est"]]
 		koa_epi_est = floatList(koa_epi_est)
-		koa_est_stat = getStat(koa_epi_est, "est", "EPI", "N/A")
+		koa_est_stat = getStat(koa_epi_est, "est", "EPI Suite", "N/A")
 		return koa_est_stat
 	else:
-		return getStat(koa_epi_exp, "exp", "EPI", "N/A")
+		return getStat(koa_epi_exp, "exp", "EPI Suite", "N/A")
 
 
 """
@@ -838,7 +987,7 @@ def parse_DegAir_stat(epi_json, index):
 	#   only estimation data
 	DegAir_epi_est = [epi_json[index]["HLDegAir  hour"]]
 	DegAir_epi_est = floatList(DegAir_epi_est)
-	return getStat(DegAir_epi_est, "est", "EPI", "h")
+	return getStat(DegAir_epi_est, "est", "EPI Suite", "h")
 
 
 """
@@ -849,7 +998,7 @@ def parse_DegWater_stat(epi_json, index):
 	#   only estimation data
 	DegWater_epi_est = [epi_json[index]["HLDegWater  hour"]]
 	DegWater_epi_est = floatList(DegWater_epi_est)
-	return getStat(DegWater_epi_est, "est", "EPI", "h")
+	return getStat(DegWater_epi_est, "est", "EPI Suite", "h")
 
 
 """
@@ -860,7 +1009,7 @@ def parse_DegSoil_stat(epi_json, index):
 	#   only estimation data
 	DegSoil_epi_est = [epi_json[index]["HLDegSoil  hour"]]
 	DegSoil_epi_est = floatList(DegSoil_epi_est)
-	return getStat(DegSoil_epi_est, "est", "EPI", "h")
+	return getStat(DegSoil_epi_est, "est", "EPI Suite", "h")
 
 
 """
@@ -871,7 +1020,7 @@ def parse_DegSed_stat(epi_json, index):
 	#   only estimation data
 	DegSed_epi_est = [epi_json[index]["HLDegSed  hour"]]
 	DegSed_epi_est = floatList(DegSed_epi_est)
-	return getStat(DegSed_epi_est, "est", "EPI", "h")
+	return getStat(DegSed_epi_est, "est", "EPI Suite", "h")
 
 
 """
@@ -882,7 +1031,7 @@ def parse_DegAero_stat(epi_json, index):
 	#   only estimation data
 	DegAero_epi_est = [epi_json[index]["HLDegAero  hour"]]
 	DegAero_epi_est = floatList(DegAero_epi_est)
-	return getStat(DegAero_epi_est, "est", "EPI", "h")
+	return getStat(DegAero_epi_est, "est", "EPI Suite", "h")
 
 
 """
@@ -893,42 +1042,58 @@ def parse_DegSSed_stat(epi_json, index):
 	#   only estimation data
 	DegSSed_epi_est = [epi_json[index]["HLDegSsed  hour"]]
 	DegSSed_epi_est = floatList(DegSSed_epi_est)
-	return getStat(DegSSed_epi_est, "est", "EPI", "h")
+	return getStat(DegSSed_epi_est, "est", "EPI Suite", "h")
 
 
 """
 	VP: Vapor Pressure (Pa)
 		EPI & TEST
 """
+def mmhg_to_pa(origin):
+	thislist=list()
+	#print(origin)
+	for i in origin:
+		if i!="N/A":
+			a=i*133.32239
+			thislist.append(a)
+		else:
+			thislist.append(i)
+	return thislist
+
 def parse_vp_stat(epi_json, test_json, index):
 	# first look at the experimental data
 	vp_epi_exp = [epi_json[index]["VP  mmHg  exp"]]
 	vp_epi_exp = floatList(vp_epi_exp)
+	vp_epi_exp = mmhg_to_pa(vp_epi_exp)
+
 	vp_test_exp = [test_json[index][u"Vapor pressure at 25\u00b0C  Exp_Value:mmHg"]]
 	vp_test_exp = floatList(vp_test_exp)
+	vp_test_exp = mmhg_to_pa(vp_test_exp)
 	# vp_test_exp = mmHgToPa(vp_test_exp)
-	if vp_epi_exp[0] != "N/A" and vp_test_exp[0] != "N/A":
+	if vp_epi_exp != [] and vp_epi_exp[0] != "N/A" and vp_test_exp[0] != "N/A":
 		vp_exp = [vp_epi_exp[0], vp_test_exp[0]]
-		return getStat(vp_exp, "exp", "EPI & VEGA", "mmHg")
-	elif vp_epi_exp[0] != "N/A":
-		return getStat(vp_epi_exp, "exp", "EPI", "mmHg")
-	elif vp_test_exp[0] != "N/A":
-		return getStat(vp_test_exp, "exp", "VEGA", "mmHg")
+		return getStat(vp_exp, "exp", "EPI Suite & VEGA", "pa")
+	elif vp_epi_exp != [] and vp_epi_exp[0] != "N/A":
+		return getStat(vp_epi_exp, "exp", "EPI Suite", "pa")
+	elif vp_test_exp != [] and vp_test_exp[0] != "N/A":
+		return getStat(vp_test_exp, "exp", "VEGA", "pa")
 	else:
 		# then estimation data
 		vp_epi_est = [epi_json[index]["VP  mmHg  est"]]
 		vp_epi_est = floatList(vp_epi_est)
+		vp_epi_est = mmhg_to_pa(vp_epi_est)
 		vp_test_est = [test_json[index][u"Vapor pressure at 25\u00b0C  Pred_Value:mmHg"]]
 		vp_test_est = floatList(vp_test_est)
+		vp_test_est = mmhg_to_pa(vp_test_est)
 		# vp_test_est = mmHgToPa(vp_test_est)
-		if (vp_epi_est[0] != "N/A" and vp_test_est[0] != "N/A") \
-			or (vp_epi_est[0] == "N/A" and vp_test_est[0] == "N/A"):
+		if (vp_epi_est != [] and vp_epi_est[0] != "N/A" and vp_test_est[0] != "N/A") \
+			or (vp_epi_est != [] and vp_epi_est[0] == "N/A" and vp_test_est[0] == "N/A"):
 			vp_est = [vp_epi_est[0], vp_test_est[0]]
-			return getStat(vp_est, "est", "EPI & VEGA", "mmHg")
-		elif vp_epi_est[0] != "N/A":
-			return getStat(vp_epi_est, "est", "EPI", "mmHg")
-		elif vp_test_est[0] != "N/A":
-			return getStat(vp_test_est, "est", "VEGA", "mmHg")
+			return getStat(vp_est, "est", "EPI Suite & VEGA", "pa")
+		elif vp_epi_est != [] and vp_epi_est[0] != "N/A":
+			return getStat(vp_epi_est, "est", "EPI Suite", "pa")
+		elif vp_test_est != [] and vp_test_est[0] != "N/A":
+			return getStat(vp_test_est, "est", "VEGA", "pa")
 
 
 """
@@ -978,9 +1143,9 @@ def parse_ws_stat(epi_json, test_json, index):
 		if ws_epi_exp[0] == "N/A" and ws_epi_exp[1] == "N/A":
 			return getStat(ws_test_exp, "exp", "TEST", "mg/L")
 		if ws_test_exp[0] == "N/A":
-			return getStat(ws_epi_exp, "exp", "EPI", "mg/L")
+			return getStat(ws_epi_exp, "exp", "EPI Suite", "mg/L")
 
-		return getStat(ws_exp, "exp", "EPI & TEST", "mg/L")
+		return getStat(ws_exp, "exp", "EPI Suite & TEST", "mg/L")
 	else:
 		# then estimation data
 		ws_est=list()
@@ -994,9 +1159,9 @@ def parse_ws_stat(epi_json, test_json, index):
 		if ws_epi_est[0] == "N/A" and ws_epi_est[1] == "N/A":
 			return getStat(ws_test_est, "est", "TEST", "mg/L")
 		if ws_test_est[0] == "N/A":
-			return getStat(ws_epi_est, "est", "EPI", "mg/L")
+			return getStat(ws_epi_est, "est", "EPI Suite", "mg/L")
 
-		return getStat(ws_est, "est", "EPI & TEST", "mg/L")
+		return getStat(ws_est, "est", "EPI Suite & TEST", "mg/L")
 
 
 """
@@ -1010,11 +1175,11 @@ def parse_koctair_stat(epi_json, index):
 	if b!="N/A":
 		k_epi_est = [b]
 		k_epi_est = floatList(k_epi_est)
-		return getStat(k_epi_est, "exp", "EPI", "N/A")
+		return getStat(k_epi_est, "exp", "EPI Suite", "N/A")
 	else:
 		k_epi_est = [a]
 		k_epi_est = floatList(k_epi_est)
-		return getStat(k_epi_est, "est", "EPI", "N/A")		
+		return getStat(k_epi_est, "est", "EPI Suite", "N/A")		
 
 
 """
@@ -1025,7 +1190,7 @@ def parse_totalRemoval_10000hr_stat(epi_json, index):
 	#   only estimation data
 	totalRm_epi_est1 = [epi_json[index]["WWTremoval  %  10000hr"]]
 	totalRm_epi_est1 = floatList(totalRm_epi_est1)
-	return getStat(totalRm_epi_est1, "est", "EPI", "%")
+	return getStat(totalRm_epi_est1, "est", "EPI Suite", "%")
 
 
 """
@@ -1036,7 +1201,7 @@ def parse_totalRemoval_EPAmethod_stat(epi_json, index):
 	#   only estimation data
 	totalRm_epi_est2 = [epi_json[index]["WWTremoval  %  Biowin/EPA"]]
 	totalRm_epi_est2 = floatList(totalRm_epi_est2)
-	return getStat(totalRm_epi_est2, "est", "EPI", "%")
+	return getStat(totalRm_epi_est2, "est", "EPI Suite", "%")
 
 
 """
@@ -1047,7 +1212,7 @@ def parse_totalBiodeg_10000hr_stat(epi_json, index):
 	#   only estimation data
 	totalBiodeg_epi_est1 = [epi_json[index]["WWTbio  %  10000hr"]]
 	totalBiodeg_epi_est1 = floatList(totalBiodeg_epi_est1)
-	return getStat(totalBiodeg_epi_est1, "est", "EPI", "%")
+	return getStat(totalBiodeg_epi_est1, "est", "EPI Suite", "%")
 
 
 """
@@ -1058,7 +1223,7 @@ def parse_totalBiodeg_EPAmethod_stat(epi_json, index):
 	#   only estimation data
 	totalBiodeg_epi_est1 = [epi_json[index]["WWTbio  %  Biowin/EPA"]]
 	totalBiodeg_epi_est1 = floatList(totalBiodeg_epi_est1)
-	return getStat(totalBiodeg_epi_est1, "est", "EPI", "%")
+	return getStat(totalBiodeg_epi_est1, "est", "EPI Suite", "%")
 
 
 """
@@ -1069,7 +1234,7 @@ def parse_totalSldAds_10000hr_stat(epi_json, index):
 	#   only estimation data
 	totalSldAds_epi_est1 = [epi_json[index]["WWTslu  %  10000hr"]]
 	totalSldAds_epi_est1 = floatList(totalSldAds_epi_est1)
-	return getStat(totalSldAds_epi_est1, "est", "EPI", "%")
+	return getStat(totalSldAds_epi_est1, "est", "EPI Suite", "%")
 
 
 """
@@ -1080,7 +1245,7 @@ def parse_totalSldAds_EPAmethod_stat(epi_json, index):
 	#   only estimation data
 	totalSldAds_epi_est2 = [epi_json[index]["WWTslu  %  Biowin/EPA"]]
 	totalSldAds_epi_est2 = floatList(totalSldAds_epi_est2)
-	return getStat(totalSldAds_epi_est2, "est", "EPI", "%")
+	return getStat(totalSldAds_epi_est2, "est", "EPI Suite", "%")
 
 
 """
@@ -1091,7 +1256,7 @@ def parse_totalToAir_10000hr_stat(epi_json, index):
 	#   only estimation data
 	totalToAir_epi_est1 = [epi_json[index]["WWTair  %  10000hr"]]
 	totalToAir_epi_est1 = floatList(totalToAir_epi_est1)
-	return getStat(totalToAir_epi_est1, "est", "EPI", "%")
+	return getStat(totalToAir_epi_est1, "est", "EPI Suite", "%")
 
 
 """
@@ -1102,7 +1267,7 @@ def parse_totalToAir_EPAmethod_stat(epi_json, index):
 	#   only estimation data
 	totalToAir_epi_est2 = [epi_json[index]["WWTair  %  Biowin/EPA"]]
 	totalToAir_epi_est2 = floatList(totalToAir_epi_est2)
-	return getStat(totalToAir_epi_est2, "est", "EPI", "%")
+	return getStat(totalToAir_epi_est2, "est", "EPI Suite", "%")
 
 
 """
@@ -1114,33 +1279,33 @@ def parse_fishLC50class_stat(vega_json, index):
 	fishLC50class_vega_exp = [vega_json[index]["Fish Acute (LC50) Toxicity classification (SarPy/IRFMN) - experimental value"]]
 	stat = {}
 	if fishLC50class_vega_exp[0] != "N/A":
-		stat["avg"] = fishLC50class_vega_exp[0]
+		stat["mean"] = fishLC50class_vega_exp[0]
 		stat["min"] = fishLC50class_vega_exp[0]
 		stat["max"] = fishLC50class_vega_exp[0]
 		stat["ss"] = 1
-		stat["sd"] = 0
+		stat["std"] = 0
 		stat["note"] = "exp"
 		stat["source"] = "VEGA"
 		stat["unit"] = "N/A"
 	else:
 		fishLC50class_vega_est = vega_json[index]["Fish Acute (LC50) Toxicity classification (SarPy/IRFMN) - assessment"]
 		if fishLC50class_vega_est == "N/A":
-			stat["avg"] = "N/A"
+			stat["mean"] = "N/A"
 			stat["min"] = "N/A"
 			stat["max"] = "N/A"
 			stat["ss"] = 1
-			stat["sd"] = 0
+			stat["std"] = 0
 			stat["note"] = "est"
 			stat["source"] = "VEGA"
 			stat["unit"] = "N/A"
 		else:
 			fishLC50class_vega_est_v = fishLC50class_vega_est[:fishLC50class_vega_est.rfind("(")].strip()
 			fishLC50class_vega_est_r = fishLC50class_vega_est[fishLC50class_vega_est.rfind("(")+1: fishLC50class_vega_est.index("reliability")].strip()
-			stat["avg"] = fishLC50class_vega_est_v
+			stat["mean"] = fishLC50class_vega_est_v
 			stat["min"] = fishLC50class_vega_est_v
 			stat["max"] = fishLC50class_vega_est_v
 			stat["ss"] = 1
-			stat["sd"] = 0
+			stat["std"] = 0
 			stat["note"] = "est " + fishLC50class_vega_est_r
 			stat["source"] = "VEGA"
 			stat["unit"] = "N/A"
@@ -1164,7 +1329,7 @@ def parse_fishLC50_stat(vega_json, index):
 		fishLC50_vega_exp2 = fishLC50_vega_exp2[:fishLC50_vega_exp2.index("mg/L")].strip()
 		fishLC50_vega_exp = [fishLC50_vega_exp1, fishLC50_vega_exp2]
 		fishLC50_vega_exp = floatList(fishLC50_vega_exp)
-		return getStat(fishLC50_vega_exp, "exp", "VEGA", "mg/L")
+		return getgeoStat(fishLC50_vega_exp, "exp", "VEGA", "mg/L")
 	else:
 		# look at estimation data
 		fishLC50_vega_est = [vega_json[index]["Fish Acute (LC50) Toxicity model (KNN/Read-Across) - assessment"],
@@ -1175,79 +1340,79 @@ def parse_fishLC50_stat(vega_json, index):
 				for fishLC50_vega_est_ins in fishLC50_vega_est:
 					fishLC50_vega_est_v.append(fishLC50_vega_est_ins[:fishLC50_vega_est_ins.index("mg/L")].strip())
 				fishLC50_vega_est_v = floatList(fishLC50_vega_est_v)
-				return getStat(fishLC50_vega_est_v, "est good", "VEGA", "mg/L")
+				return getgeoStat(fishLC50_vega_est_v, "est good", "VEGA", "mg/L")
 			else:
 				fishLC50_vega_est_ins = fishLC50_vega_est[0]
 				fishLC50_vega_est_ins = fishLC50_vega_est_ins[:fishLC50_vega_est_ins.index("mg/L")].strip()
 				fishLC50_vega_est_v = [fishLC50_vega_est_ins]
 				fishLC50_vega_est_v = floatList(fishLC50_vega_est_v)
-				return getStat(fishLC50_vega_est_v, "est good", "VEGA", "mg/L")
+				return getgeoStat(fishLC50_vega_est_v, "est good", "VEGA", "mg/L")
 		elif "moderate" in fishLC50_vega_est[0]:
 			if "good" in fishLC50_vega_est[1]:
 				fishLC50_vega_est_ins = fishLC50_vega_est[1]
 				fishLC50_vega_est_ins = fishLC50_vega_est_ins[:fishLC50_vega_est_ins.index("mg/L")].strip()
 				fishLC50_vega_est_v = [fishLC50_vega_est_ins]
 				fishLC50_vega_est_v = floatList(fishLC50_vega_est_v)
-				return getStat(fishLC50_vega_est_v, "est good", "VEGA", "mg/L")
+				return getgeoStat(fishLC50_vega_est_v, "est good", "VEGA", "mg/L")
 			elif "moderate" in fishLC50_vega_est[1]:
 				fishLC50_vega_est_v = []
 				for fishLC50_vega_est_ins in fishLC50_vega_est:
 					fishLC50_vega_est_v.append(fishLC50_vega_est_ins[:fishLC50_vega_est_ins.index("mg/L")].strip())
 				fishLC50_vega_est_v = floatList(fishLC50_vega_est_v)
-				return getStat(fishLC50_vega_est_v, "est moderate", "VEGA", "mg/L")
+				return getgeoStat(fishLC50_vega_est_v, "est moderate", "VEGA", "mg/L")
 			else:
 				fishLC50_vega_est_ins = fishLC50_vega_est[0]
 				fishLC50_vega_est_ins = fishLC50_vega_est_ins[:fishLC50_vega_est_ins.index("mg/L")].strip()
 				fishLC50_vega_est_v = [fishLC50_vega_est_ins]
 				fishLC50_vega_est_v = floatList(fishLC50_vega_est_v)
-				return getStat(fishLC50_vega_est_v, "est moderate", "VEGA", "mg/L")
+				return getgeoStat(fishLC50_vega_est_v, "est moderate", "VEGA", "mg/L")
 		elif "low" in fishLC50_vega_est[0]:
 			if "good" in fishLC50_vega_est[1]:
 				fishLC50_vega_est_ins = fishLC50_vega_est[1]
 				fishLC50_vega_est_ins = fishLC50_vega_est_ins[:fishLC50_vega_est_ins.index("mg/L")].strip()
 				fishLC50_vega_est_v = [fishLC50_vega_est_ins]
 				fishLC50_vega_est_v = floatList(fishLC50_vega_est_v)
-				return getStat(fishLC50_vega_est_v, "est good", "VEGA", "mg/L")
+				return getgeoStat(fishLC50_vega_est_v, "est good", "VEGA", "mg/L")
 			elif "moderate" in fishLC50_vega_est[1]:
 				fishLC50_vega_est_ins = fishLC50_vega_est[1]
 				fishLC50_vega_est_ins = fishLC50_vega_est_ins[:fishLC50_vega_est_ins.index("mg/L")].strip()
 				fishLC50_vega_est_v = [fishLC50_vega_est_ins]
 				fishLC50_vega_est_v = floatList(fishLC50_vega_est_v)
-				return getStat(fishLC50_vega_est_v, "est moderate", "VEGA", "mg/L")
+				return getgeoStat(fishLC50_vega_est_v, "est moderate", "VEGA", "mg/L")
 			elif "low" in fishLC50_vega_est[1]:
 				fishLC50_vega_est_v = []
 				for fishLC50_vega_est_ins in fishLC50_vega_est:
 					fishLC50_vega_est_v.append(fishLC50_vega_est_ins[:fishLC50_vega_est_ins.index("mg/L")].strip())
 				fishLC50_vega_est_v = floatList(fishLC50_vega_est_v)
-				return getStat(fishLC50_vega_est_v, "est low", "VEGA", "mg/L")
+				return getgeoStat(fishLC50_vega_est_v, "est low", "VEGA", "mg/L")
 			else:
 				fishLC50_vega_est_ins = fishLC50_vega_est[0]
 				fishLC50_vega_est_ins = fishLC50_vega_est_ins[:fishLC50_vega_est_ins.index("mg/L")].strip()
 				fishLC50_vega_est_v = [fishLC50_vega_est_ins]
 				fishLC50_vega_est_v = floatList(fishLC50_vega_est_v)
-				return getStat(fishLC50_vega_est_v, "est low", "VEGA", "mg/L")
+				return getgeoStat(fishLC50_vega_est_v, "est low", "VEGA", "mg/L")
 		else:	#"N/A" for the fishLC50_vega_est[0]
 			if "good" in fishLC50_vega_est[1]:
 				fishLC50_vega_est_ins = fishLC50_vega_est[1]
 				fishLC50_vega_est_ins = fishLC50_vega_est_ins[:fishLC50_vega_est_ins.index("mg/L")].strip()
 				fishLC50_vega_est_v = [fishLC50_vega_est_ins]
 				fishLC50_vega_est_v = floatList(fishLC50_vega_est_v)
-				return getStat(fishLC50_vega_est_v, "est good", "VEGA", "mg/L")
+				return getgeoStat(fishLC50_vega_est_v, "est good", "VEGA", "mg/L")
 			elif "moderate" in fishLC50_vega_est[1]:
 				fishLC50_vega_est_ins = fishLC50_vega_est[1]
 				fishLC50_vega_est_ins = fishLC50_vega_est_ins[:fishLC50_vega_est_ins.index("mg/L")].strip()
 				fishLC50_vega_est_v = [fishLC50_vega_est_ins]
 				fishLC50_vega_est_v = floatList(fishLC50_vega_est_v)
-				return getStat(fishLC50_vega_est_v, "est moderate", "VEGA", "mg/L")
+				return getgeoStat(fishLC50_vega_est_v, "est moderate", "VEGA", "mg/L")
 			elif "low" in fishLC50_vega_est[1]:
 				fishLC50_vega_est_ins = fishLC50_vega_est[1]
 				fishLC50_vega_est_ins = fishLC50_vega_est_ins[:fishLC50_vega_est_ins.index("mg/L")].strip()
 				fishLC50_vega_est_v = [fishLC50_vega_est_ins]
 				fishLC50_vega_est_v = floatList(fishLC50_vega_est_v)
-				return getStat(fishLC50_vega_est_v, "est low", "VEGA", "mg/L")
+				return getgeoStat(fishLC50_vega_est_v, "est low", "VEGA", "mg/L")
 			else:
 				fishLC50_vega_est_v = ["N/A", "N/A"]
-				return getStat(fishLC50_vega_est_v, "N/A", "VEGA", "mg/L")
+				return getgeoStat(fishLC50_vega_est_v, "N/A", "VEGA", "mg/L")
 
 
 """
@@ -1267,10 +1432,10 @@ def parse_fmLC50_stat(vega_json, test_json, index):
 		fmlc_vega_exp1 = fmlc_vega_exp1[:fmlc_vega_exp1.index("mg/L")].strip()
 		fmlc_exp = [fmlc_test_exp[0], fmlc_vega_exp1]
 		fmlc_exp = floatList(fmlc_exp)
-		return getStat(fmlc_exp, "exp", "TEST & VEGA", "mg/L")
+		return getgeoStat(fmlc_exp, "exp", "TEST & VEGA", "mg/L")
 	elif fmlc_test_exp[0] != "N/A":
 		fmlc_exp = [fmlc_test_exp[0]]
-		return getStat(fmlc_exp, "exp", "TEST", "mg/L")
+		return getgeoStat(fmlc_exp, "exp", "TEST", "mg/L")
 	elif fmlc_vega_exp[0] != "N/A":
 		# Note: ignore the unit transformation, directly use the value in the assessment
 		#       which is in mg/L
@@ -1278,7 +1443,7 @@ def parse_fmLC50_stat(vega_json, test_json, index):
 		fmlc_vega_exp1 = fmlc_vega_exp1[:fmlc_vega_exp1.index("mg/L")].strip()
 		fmlc_exp = [fmlc_vega_exp1]
 		fmlc_exp = floatList(fmlc_exp)
-		return getStat(fmlc_exp, "exp", "VEGA", "mg/L")
+		return getgeoStat(fmlc_exp, "exp", "VEGA", "mg/L")
 	else:
 		# look at estimation data
 		fmlc_test_est = [test_json[index]["Fathead minnow LC50 (96 hr)  Pred_Value:mg/L"]]
@@ -1290,46 +1455,46 @@ def parse_fmLC50_stat(vega_json, test_json, index):
 				fmlc_vega_est_v = fmlc_vega_est_v[:fmlc_vega_est_v.index("mg/L")].strip()
 				fmlc_est = [fmlc_vega_est_v, fmlc_test_est[0]]
 				fmlc_est = floatList(fmlc_est)
-				return getStat(fmlc_est, "est good", "TEST & VEGA", "mg/L")
+				return getgeoStat(fmlc_est, "est good", "TEST & VEGA", "mg/L")
 			else:
 				fmlc_vega_est_v = fmlc_vega_est[0]
 				fmlc_vega_est_v = fmlc_vega_est_v[:fmlc_vega_est_v.index("mg/L")].strip()
 				fmlc_est = [fmlc_vega_est_v]
 				fmlc_est = floatList(fmlc_est)
-				return getStat(fmlc_est, "est good", "VEGA", "mg/L")
+				return getgeoStat(fmlc_est, "est good", "VEGA", "mg/L")
 		elif "moderate" in fmlc_vega_est[0]:
 			if fmlc_test_est[0] != "N/A":
 				fmlc_vega_est_v = fmlc_vega_est[0]
 				fmlc_vega_est_v = fmlc_vega_est_v[:fmlc_vega_est_v.index("mg/L")].strip()
 				fmlc_est = [fmlc_vega_est_v, fmlc_test_est[0]]
 				fmlc_est = floatList(fmlc_est)
-				return getStat(fmlc_est, "est moderate", "TEST & VEGA", "mg/L")
+				return getgeoStat(fmlc_est, "est moderate", "TEST & VEGA", "mg/L")
 			else:
 				fmlc_vega_est_v = fmlc_vega_est[0]
 				fmlc_vega_est_v = fmlc_vega_est_v[:fmlc_vega_est_v.index("mg/L")].strip()
 				fmlc_est = [fmlc_vega_est_v]
 				fmlc_est = floatList(fmlc_est)
-				return getStat(fmlc_est, "est moderate", "VEGA", "mg/L")
+				return getgeoStat(fmlc_est, "est moderate", "VEGA", "mg/L")
 		elif "low" in fmlc_vega_est[0]:
 			if fmlc_test_est[0] != "N/A":
 				fmlc_est = [fmlc_test_est[0]]
 				fmlc_est = floatList(fmlc_est)
-				return getStat(fmlc_est, "est", "TEST", "mg/L")
+				return getgeoStat(fmlc_est, "est", "TEST", "mg/L")
 			else:
 				fmlc_vega_est_v = fmlc_vega_est[0]
 				fmlc_vega_est_v = fmlc_vega_est_v[:fmlc_vega_est_v.index("mg/L")].strip()
 				fmlc_est = [fmlc_vega_est_v]
 				fmlc_est = floatList(fmlc_est)
-				return getStat(fmlc_est, "est low", "VEGA", "mg/L")
+				return getgeoStat(fmlc_est, "est low", "VEGA", "mg/L")
 		else:	# fmlc_vega_est[0] == "N/A"
 			if fmlc_test_est[0] != "N/A":
 				fmlc_est = [fmlc_test_est[0]]
 				fmlc_est = floatList(fmlc_est)
-				return getStat(fmlc_est, "est", "TEST", "mg/L")
+				return getgeoStat(fmlc_est, "est", "TEST", "mg/L")
 			else:
 				fmlc_est = ["N/A", "N/A"]
 				fmlc_est = floatList(fmlc_est)
-				return getStat(fmlc_est, "N/A", "TEST & VEGA", "mg/L")
+				return getgeoStat(fmlc_est, "N/A", "TEST & VEGA", "mg/L")
 
 
 """
@@ -1352,10 +1517,10 @@ def parse_dmLC50_stat(vega_json, test_json,epi_json, index):
 		dmlc_vega_exp2 = dmlc_vega_exp2[:dmlc_vega_exp2.index("mg/L")].strip()
 		dmlc_exp = [dmlc_test_exp[0], dmlc_vega_exp1, dmlc_vega_exp2]
 		dmlc_exp = floatList(dmlc_exp)
-		return getStat(dmlc_exp, "exp", "TEST & VEGA", "mg/L")
+		return getgeoStat(dmlc_exp, "exp", "TEST & VEGA", "mg/L")
 	elif dmlc_test_exp[0] != "N/A" and dmlc_vega_exp[0] == "N/A" and dmlc_vega_exp[1] == "N/A":
 		dmlc_exp = [dmlc_test_exp[0]]
-		return getStat(dmlc_exp, "exp", "TEST", "mg/L")
+		return getgeoStat(dmlc_exp, "exp", "TEST", "mg/L")
 	elif dmlc_vega_exp[0] != "N/A" or dmlc_vega_exp[1] != "N/A":
 		# Note: ignore the unit transformation, directly use the value in the assessment
 		#       which is in mg/L
@@ -1365,7 +1530,7 @@ def parse_dmLC50_stat(vega_json, test_json,epi_json, index):
 		dmlc_vega_exp2 = dmlc_vega_exp2[:dmlc_vega_exp2.index("mg/L")].strip()
 		dmlc_exp = [dmlc_vega_exp1, dmlc_vega_exp2]
 		dmlc_exp = floatList(dmlc_exp)
-		return getStat(dmlc_exp, "exp", "VEGA", "mg/L")
+		return getgeoStat(dmlc_exp, "exp", "VEGA", "mg/L")
 	else:
 		# look at estimation data
 		dmlc_test_est = [test_json[index]["Daphnia magna LC50 (48 hr)  Pred_Value:mg/L"]]
@@ -1383,19 +1548,19 @@ def parse_dmLC50_stat(vega_json, test_json,epi_json, index):
 					dmlc_vega_est_v2 = dmlc_vega_est_v2[:dmlc_vega_est_v2.index("mg/L")].strip()
 					dmlc_est = [dmlc_vega_est_v1, dmlc_vega_est_v2, dmlc_test_est[0]]
 					dmlc_est = floatList(dmlc_est)
-					return getStat(dmlc_est, "est good", "TEST & VEGA", "mg/L")
+					return getgeoStat(dmlc_est, "est good", "TEST & VEGA", "mg/L")
 				elif "good" in dmlc_vega_est[0]:
 					dmlc_vega_est_v1 = dmlc_vega_est[0]
 					dmlc_vega_est_v1 = dmlc_vega_est_v1[:dmlc_vega_est_v1.index("mg/L")].strip()
 					dmlc_est = [dmlc_vega_est_v1, dmlc_test_est[0]]
 					dmlc_est = floatList(dmlc_est)
-					return getStat(dmlc_est, "est good", "TEST & VEGA", "mg/L")
+					return getgeoStat(dmlc_est, "est good", "TEST & VEGA", "mg/L")
 				else:
 					dmlc_vega_est_v2 = dmlc_vega_est[1]
 					dmlc_vega_est_v2 = dmlc_vega_est_v2[:dmlc_vega_est_v2.index("mg/L")].strip()
 					dmlc_est = [dmlc_vega_est_v2, dmlc_test_est[0]]
 					dmlc_est = floatList(dmlc_est)
-					return getStat(dmlc_est, "est good", "TEST & VEGA", "mg/L")
+					return getgeoStat(dmlc_est, "est good", "TEST & VEGA", "mg/L")
 			else:
 				if "good" in dmlc_vega_est[0] and "good" in dmlc_vega_est[1]:
 					dmlc_vega_est_v1 = dmlc_vega_est[0]
@@ -1404,19 +1569,19 @@ def parse_dmLC50_stat(vega_json, test_json,epi_json, index):
 					dmlc_vega_est_v2 = dmlc_vega_est_v2[:dmlc_vega_est_v2.index("mg/L")].strip()
 					dmlc_est = [dmlc_vega_est_v1, dmlc_vega_est_v2]
 					dmlc_est = floatList(dmlc_est)
-					return getStat(dmlc_est, "est good", "VEGA", "mg/L")
+					return getgeoStat(dmlc_est, "est good", "VEGA", "mg/L")
 				elif "good" in dmlc_vega_est[0]:
 					dmlc_vega_est_v1 = dmlc_vega_est[0]
 					dmlc_vega_est_v1 = dmlc_vega_est_v1[:dmlc_vega_est_v1.index("mg/L")].strip()
 					dmlc_est = [dmlc_vega_est_v1]
 					dmlc_est = floatList(dmlc_est)
-					return getStat(dmlc_est, "est good", "VEGA", "mg/L")
+					return getgeoStat(dmlc_est, "est good", "VEGA", "mg/L")
 				else:
 					dmlc_vega_est_v2 = dmlc_vega_est[1]
 					dmlc_vega_est_v2 = dmlc_vega_est_v2[:dmlc_vega_est_v2.index("mg/L")].strip()
 					dmlc_est = [dmlc_vega_est_v2]
 					dmlc_est = floatList(dmlc_est)
-					return getStat(dmlc_est, "est good", "VEGA", "mg/L")
+					return getgeoStat(dmlc_est, "est good", "VEGA", "mg/L")
 
 		elif "moderate" in dmlc_vega_est[0] or "moderate" in dmlc_vega_est[1]:
 
@@ -1425,10 +1590,10 @@ def parse_dmLC50_stat(vega_json, test_json,epi_json, index):
 				if dmlc_epi_est!="N/A":
 					dmlc_est = [dmlc_test_est[0],dmlc_epi_est]
 					dmlc_est = floatList(dmlc_est)
-					return getStat(dmlc_est, "est moderate", "TEST & EPI", "mg/L")
+					return getgeoStat(dmlc_est, "est moderate", "TEST & EPI", "mg/L")
 				else:
 					dmlc_est=[dmlc_test_est[0]]
-					return getStat(dmlc_est, "est moderate", "TEST", "mg/L")
+					return getgeoStat(dmlc_est, "est moderate", "TEST", "mg/L")
 				# elif "moderate" in dmlc_vega_est[0] and "moderate" in dmlc_vega_est[1]:
 				# 	dmlc_vega_est_v1 = dmlc_vega_est[0]
 				# 	dmlc_vega_est_v1 = dmlc_vega_est_v1[:dmlc_vega_est_v1.index("mg/L")].strip()
@@ -1459,11 +1624,11 @@ def parse_dmLC50_stat(vega_json, test_json,epi_json, index):
 					if dmlc_epi_est!="N/A":
 						dmlc_est = [dmlc_vega_est_v1, dmlc_vega_est_v2,dmlc_epi_est]
 						dmlc_est = floatList(dmlc_est)
-						return getStat(dmlc_est, "est moderate", "VEGA & EPI", "mg/L")						
+						return getgeoStat(dmlc_est, "est moderate", "VEGA & EPI Suite", "mg/L")						
 					else:
 						dmlc_est = [dmlc_vega_est_v1, dmlc_vega_est_v2]
 						dmlc_est = floatList(dmlc_est)
-						return getStat(dmlc_est, "est moderate", "VEGA", "mg/L")
+						return getgeoStat(dmlc_est, "est moderate", "VEGA", "mg/L")
 				elif "moderate" in dmlc_vega_est[0]:
 					dmlc_vega_est_v1 = dmlc_vega_est[0]
 					dmlc_vega_est_v1 = dmlc_vega_est_v1[:dmlc_vega_est_v1.index("mg/L")].strip()
@@ -1471,11 +1636,11 @@ def parse_dmLC50_stat(vega_json, test_json,epi_json, index):
 					if dmlc_epi_est!="N/A":
 						dmlc_est = [dmlc_vega_est_v1,dmlc_epi_est]
 						dmlc_est = floatList(dmlc_est)
-						return getStat(dmlc_est, "est moderate", "VEGA", "mg/L")						
+						return getgeoStat(dmlc_est, "est moderate", "VEGA", "mg/L")						
 					else:
 						dmlc_est = [dmlc_vega_est_v1]
 						dmlc_est = floatList(dmlc_est)
-						return getStat(dmlc_est, "est moderate", "VEGA", "mg/L")
+						return getgeoStat(dmlc_est, "est moderate", "VEGA", "mg/L")
 				else:
 					dmlc_vega_est_v2 = dmlc_vega_est[1]
 					dmlc_vega_est_v2 = dmlc_vega_est_v2[:dmlc_vega_est_v2.index("mg/L")].strip()
@@ -1483,21 +1648,21 @@ def parse_dmLC50_stat(vega_json, test_json,epi_json, index):
 					if dmlc_epi_est!="N/A":
 						dmlc_est = [dmlc_vega_est_v2,dmlc_epi_est]
 						dmlc_est = floatList(dmlc_est)
-						return getStat(dmlc_est, "est moderate", "VEGA", "mg/L")						
+						return getgeoStat(dmlc_est, "est moderate", "VEGA", "mg/L")						
 					else:
 						dmlc_est = [dmlc_vega_est_v2]
 						dmlc_est = floatList(dmlc_est)
-						return getStat(dmlc_est, "est moderate", "VEGA", "mg/L")
+						return getgeoStat(dmlc_est, "est moderate", "VEGA", "mg/L")
 
 		elif dmlc_epi_est!="N/A":
 			dmlc_est = [dmlc_epi_est]
 			dmlc_est = floatList(dmlc_est)
-			return getStat(dmlc_est, "est moderate", "EPI", "mg/L")			
+			return getgeoStat(dmlc_est, "est moderate", "EPI Suite", "mg/L")			
 		elif "low" in dmlc_vega_est[0] or "low" in dmlc_vega_est[1]:
 			if dmlc_test_est[0] != "N/A":
 				dmlc_est = [dmlc_test_est[0]]
 				dmlc_est = floatList(dmlc_est)
-				return getStat(dmlc_est, "est", "TEST", "mg/L")
+				return getgeoStat(dmlc_est, "est", "TEST", "mg/L")
 			elif dmlc_vega_est[0]!="N/A" and dmlc_vega_est[1]!="N/A":
 				dmlc_vega_est_v1 = dmlc_vega_est[0]
 				dmlc_vega_est_v1 = dmlc_vega_est_v1[:dmlc_vega_est_v1.index("mg/L")].strip()
@@ -1505,18 +1670,18 @@ def parse_dmLC50_stat(vega_json, test_json,epi_json, index):
 				dmlc_vega_est_v2 = dmlc_vega_est_v2[:dmlc_vega_est_v2.index("mg/L")].strip()
 				dmlc_est = [dmlc_vega_est_v1, dmlc_vega_est_v2]
 				dmlc_est = floatList(dmlc_est)
-				return getStat(dmlc_est, "est low", "VEGA", "mg/L")
+				return getgeoStat(dmlc_est, "est low", "VEGA", "mg/L")
 		elif dmlc_vega_est[0] == "N/A" and dmlc_vega_est[1] == "N/A":
 			if dmlc_test_est[0] != "N/A":
 				dmlc_est = [dmlc_test_est[0]]
 				dmlc_est = floatList(dmlc_est)
-				return getStat(dmlc_est, "est", "TEST", "mg/L")
+				return getgeoStat(dmlc_est, "est", "TEST", "mg/L")
 			else:
 				dmlc_est = ["N/A", "N/A", "N/A"]
-				return getStat(dmlc_est, "N/A", "TEST & VEGA", "mg/L")
+				return getgeoStat(dmlc_est, "N/A", "TEST & VEGA", "mg/L")
 		else:
 			dmlc_est = ["N/A", "N/A", "N/A"]
-			return getStat(dmlc_est, "N/A", "TEST & VEGA", "mg/L")
+			return getgeoStat(dmlc_est, "N/A", "TEST & VEGA", "mg/L")
 
 
 """
@@ -2059,7 +2224,7 @@ def parse_ER_stat(vega_json, index):
 	ER_vega_exp_nonclass = 0;	
 	for ER_vega_exp_ins in ER_vega_exp:
 		if ER_vega_exp_ins != "N/A":
-			if "Possible" in ER_vega_exp_ins:
+			if "Possible" in ER_vega_exp_ins or "Not predicted" in ER_vega_exp_ins:
 				ER_vega_exp_nonclass += 1
 			elif "NON" in ER_vega_exp_ins or "Inactive" in ER_vega_exp_ins:
 				ER_vega_exp_neg += 1
@@ -2123,7 +2288,7 @@ def parse_ER_stat(vega_json, index):
 			return stat
 		elif len(ER_vega_est_moderate) >= 1:
 			for ER_vega_est_moderate_ins in ER_vega_est_moderate:
-				if "Possible" in ER_vega_est_moderate_ins:
+				if "Possible" in ER_vega_est_moderate_ins or "Not predicted" in ER_vega_est_moderate_ins:
 					ER_vega_est_nonclass += 1
 				elif "NON" in ER_vega_est_moderate_ins or "Inactive" in ER_vega_est_moderate_ins:
 					ER_vega_est_neg += 1
@@ -2149,7 +2314,7 @@ def parse_ER_stat(vega_json, index):
 			return stat
 		elif len(ER_vega_est_low) >= 1:
 			for ER_vega_est_low_ins in ER_vega_est_low:
-				if "Possible" in ER_vega_est_low_ins:
+				if "Possible" in ER_vega_est_low_ins or "Not predicted" in ER_vega_est_low_ins:
 					ER_vega_est_nonclass += 1
 				elif "NON" in ER_vega_est_low_ins or "Inactive" in ER_vega_est_low_ins:
 					ER_vega_est_neg += 1
@@ -2328,17 +2493,13 @@ def parse_skinSensi_stat(vega_json, index):
 	  TEST
 """
 def parse_OratLD50_stat(test_json, index):
-	OratLD50_exp = [test_json[index][u"Oral rat LD50  Exp_Value:mg/kg  FDA"],
-					test_json[index][u"Oral rat LD50  Exp_Value:mg/kg  HC"],
-					test_json[index][u"Oral rat LD50  Exp_Value:mg/kg  NN"]]
+	OratLD50_exp = [test_json[index][u"Oral rat LD50  Exp_Value:mg/kg  C"]]
 	OratLD50_exp = floatList(OratLD50_exp)
-	OratLD50_exp_stat = getStat(OratLD50_exp, "exp", "TEST", u"mg/kg")
-	if OratLD50_exp_stat["avg"] == "N/A":
-		OratLD50_est = [test_json[index][u"Oral rat LD50  Pred_Value:mg/kg  FDA"],
-						test_json[index][u"Oral rat LD50  Pred_Value:mg/kg  HC"],
-						test_json[index][u"Oral rat LD50  Pred_Value:mg/kg  NN"]]
+	OratLD50_exp_stat = getgeoStat(OratLD50_exp, "exp", "TEST", u"mg/kg")
+	if OratLD50_exp_stat["mean"] == "N/A":
+		OratLD50_est = [test_json[index][u"Oral rat LD50  Pred_Value:mg/kg  C"]]
 		OratLD50_est = floatList(OratLD50_est)
-		OratLD50_est_stat = getStat(OratLD50_est, "est", "TEST", u"mg/kg")
+		OratLD50_est_stat = getgeoStat(OratLD50_est, "est", "TEST", u"mg/kg")
 		return OratLD50_est_stat
 	else:
 		return OratLD50_exp_stat
@@ -2350,7 +2511,7 @@ def parse_OratLD50_stat(test_json, index):
 
 def getStat(valueList, note, source, unit):
 	# remove N/A
-	if "N/A" in valueList:
+	if "N/A" in valueList or valueList == []:
 		if valueList.count("N/A") == len(valueList):	# only has "N/A"
 			return {"avg":"N/A", 
 						"min":"N/A",
@@ -2364,7 +2525,7 @@ def getStat(valueList, note, source, unit):
 		# note: if any valid value avaialbe, we do not take into account of "N/A"
 		valueList = filter(lambda lbd: lbd != "N/A", valueList)
 	stat = {}
-	# print ",,,", valueList
+	#print ",,,", valueList
 	stat["avg"] = np.mean(valueList)
 	stat["min"] = min(valueList)
 	stat["max"] = max(valueList)
@@ -2373,6 +2534,48 @@ def getStat(valueList, note, source, unit):
 	stat["note"] = note
 	stat["source"] = source
 	stat["unit"] = unit
+
+	if stat["ss"]==1:
+		stat["sd"]="N/A"
+	return stat
+
+
+def getgeoStat(valueList, note, source, unit):
+	# remove N/A
+	if "N/A" in valueList or valueList == []:
+		if valueList.count("N/A") == len(valueList):	# only has "N/A"
+			return {"mean":"N/A", 
+						"min":"N/A",
+						"max":"N/A",
+						"ss":len(valueList),
+						"std":0,
+						"note":note,
+						"source":source,
+						"unit": unit}
+		# remove all "N/A"
+		# note: if any valid value avaialbe, we do not take into account of "N/A"
+		valueList = filter(lambda lbd: lbd != "N/A", valueList)
+	stat = {}
+	print(",,,", valueList)
+	U = reduce(lambda x, y: x*y, valueList)**(1.0/len(valueList))
+	stat["mean"] = U
+	stat["min"] = min(valueList)
+	stat["max"] = max(valueList)
+	stat["ss"] = len(valueList)
+
+	sumofc=0
+	for i in valueList:
+		sumofc=sumofc+np.log(i/U)*np.log(i/U)
+
+	O=np.exp(np.sqrt(sumofc/len(valueList)))
+
+	stat["std"] = O
+	stat["note"] = note
+	stat["source"] = source
+	stat["unit"] = unit
+
+	if stat["ss"]==1:
+		stat["std"]="N/A"
 	return stat
 
 
@@ -2440,6 +2643,8 @@ def ensureSameLength(epi_json, vega_json, test_json):
 	if len(epi_json) != len(test_json):
 		return False
 	return True
+
+
 
 
 

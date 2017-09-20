@@ -588,15 +588,16 @@ def switch(smiles,epi,vega,test,test_opt="1",
         save_json_to_batch_json(PATH_DICT["TEST_RESULT_JSON_PATH"],test_batch_path)
 
     #outputFilePath = DEFAULT_JSON_OUTPUT_FILEPATH
-    if epi:
-        epiJSON = read_json(PATH_DICT["EPI_RESULT_JSON_PATH"])
-    if vega:
-        vegaJSON = read_json(PATH_DICT["VEGA_RESULT_JSON_PATH"])
-    if test:
-        testJSON = read_json(PATH_DICT["TEST_RESULT_JSON_PATH"])
+    # if epi:
+    epiJSON = read_json(PATH_DICT["EPI_RESULT_JSON_PATH"])
+    # if vega:
+    vegaJSON = read_json(PATH_DICT["VEGA_RESULT_JSON_PATH"])
+    # if test:
+    testJSON = read_json(PATH_DICT["TEST_RESULT_JSON_PATH"])
     
     print("{:.2f} GB free memory".format(float(psutil.virtual_memory().available) / (1024 * 1024 * 1024)))
     qsar_dict = parse(epiJSON,vegaJSON,testJSON,PATH_DICT["COMBINED_RESULT_JSON_PATH"])
+    # print(qsar_dict)
     return qsar_dict
 
 def save_json_to_batch_json(result_json_path,outfile_path):
