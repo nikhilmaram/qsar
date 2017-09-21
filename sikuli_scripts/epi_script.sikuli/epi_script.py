@@ -11,11 +11,10 @@ path_array = script_dir.split(os.sep)
 del path_array[-1]
 base_script_dir = (os.sep).join(path_array)
 sys.path.insert(0, base_script_dir)
-from locater import get_locations
+
 Settings.TypeDelay = 0
 sys.path.pop(0)
 
-locs = get_locations()
 
 smiles_location = r'Z:\home\awsgui\Desktop\qsar\episuite_file\epi_smiles.txt'
 #destination_folder = locs['results']
