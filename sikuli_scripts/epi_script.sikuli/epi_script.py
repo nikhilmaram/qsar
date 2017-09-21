@@ -2,11 +2,11 @@ import sys
 import datetime
 import os
 import inspect
-
+import time
 script_dir = os.path.dirname(os.path.abspath(
     inspect.getfile(inspect.currentframe()))
 )
-#import locater script
+
 path_array = script_dir.split(os.sep)
 del path_array[-1]
 base_script_dir = (os.sep).join(path_array)
@@ -15,31 +15,21 @@ sys.path.insert(0, base_script_dir)
 Settings.TypeDelay = 0
 sys.path.pop(0)
 
-
 smiles_location = r'Z:\home\awsgui\Desktop\qsar\episuite_file\epi_smiles.txt'
-#destination_folder = locs['results']
-# log_file = locs['log']
 
-# if log_file:
-#     try: 
-#        log = open(log_file, 'a')
-#        log.write("Started Epi Script. Log Loaded\n")
-#     except:
-#        log = False
-
-
-import sys
 def StopSikuli(event):
     sys.exit()
 
 #Env.addHotkey(Key.F2, KEY_CTRL, StopSikuli)
 
 
-App.focus("Epiweb1")
-hover(Location(1,1))
+#App.focus("Epiweb1")
+#hover(Location(1,1))
 hover(Location(10,10))
 click("Selection_001.png")
-click("Selection_002.png")
+time.sleep(0.5)
+#click("Selection_002.png")
+type(Key.F5)
 wait("Selection_003.png",10)
 click("Selection_003-1.png")
 wait("Selection_004.png", 10)
