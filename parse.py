@@ -168,9 +168,9 @@ def parse(epi_json, vega_json, test_json, outputFilePath):
 						chemicalObj[currentobject]["ss"]=0
 
 
-				if "sd" in chemicalObj[currentobject]:
-					chemicalObj[currentobject]["std"]=chemicalObj[currentobject]["sd"]
-					del chemicalObj[currentobject]["sd"]
+				if "std" in chemicalObj[currentobject]:
+					chemicalObj[currentobject]["std"]=chemicalObj[currentobject]["std"]
+					del chemicalObj[currentobject]["std"]
 
 				for element in chemicalObj[currentobject]:
 					if chemicalObj[currentobject][element]=="N/A":
@@ -249,7 +249,7 @@ def parse_ata_stat(epi_json,index):
 	stat["min"]="N/A"
 	stat["max"]="N/A"
 	stat["ss"]=1
-	stat["sd"]="N/A"
+	stat["std"]="N/A"
 	return stat
 
 
@@ -547,7 +547,7 @@ def parse_bultimate_stat(epi_json, index):
 	stat["min"]="N/A"
 	stat["max"]="N/A"
 	stat["ss"]=1
-	stat["sd"]="N/A"
+	stat["std"]="N/A"
 	return stat
 
 """
@@ -564,7 +564,7 @@ def parse_bprimary_stat(epi_json, index):
 	stat["min"]="N/A"
 	stat["max"]="N/A"
 	stat["ss"]=1
-	stat["sd"]="N/A"
+	stat["std"]="N/A"
 	return stat
 
 # """
@@ -638,9 +638,9 @@ def parse_biodeg(epi_json,vega_json,index):
 			vep += 1
 			stat["avg"]="positive"
 
-		stat["num_p"]=vep
-		stat["num_n"]=ven
-		stat["num_nc"]=venotc
+		stat["numP"]=vep
+		stat["numN"]=ven
+		stat["numNC"]=venotc
 		stat["ss"]=1
 		stat["note"]="exp"
 		stat["unit"]="N/A"
@@ -683,9 +683,9 @@ def parse_biodeg(epi_json,vega_json,index):
 	stat["avg"]=avg
 	if p==0 and n==0:
 		stat["avg"]="N/A"
-	stat["num_p"]=p
-	stat["num_n"]=n
-	stat["num_nc"]=notc
+	stat["numP"]=p
+	stat["numN"]=n
+	stat["numNC"]=notc
 	stat["ss"]=s
 	stat["note"]="est"
 	stat["unit"]="N/A"
@@ -1727,9 +1727,9 @@ def parse_mutaTox_stat(vega_json, test_json, index):
 			stat["source"] = "TEST"
 		else:
 			stat["source"] = "VEGA"
-		stat["num_p"] = mutaTox_exp_pos
-		stat["num_n"] = mutaTox_exp_neg
-		stat["num_nc"] = mutaTox_exp_nonclass
+		stat["numP"] = mutaTox_exp_pos
+		stat["numN"] = mutaTox_exp_neg
+		stat["numNC"] = mutaTox_exp_nonclass
 		stat["ss"] = mutaTox_vega_exp_total + mutaTox_test_exp_total
 		stat["note"] = "exp"
 		stat["unit"] = "N/A"
@@ -1783,9 +1783,9 @@ def parse_mutaTox_stat(vega_json, test_json, index):
 				stat["source"] = "VEGA & TEST"
 			else:
 				stat["source"] = "VEGA"
-			stat["num_p"] = mutaTox_est_pos
-			stat["num_n"] = mutaTox_est_neg
-			stat["num_nc"] = mutaTox_test_est_nonclass + mutaTox_vega_est_nonclass
+			stat["numP"] = mutaTox_est_pos
+			stat["numN"] = mutaTox_est_neg
+			stat["numNC"] = mutaTox_test_est_nonclass + mutaTox_vega_est_nonclass
 			stat["ss"] = mutaTox_vega_est_total + mutaTox_test_est_total
 			stat["note"] = "est good"
 			stat["unit"] = "N/A"
@@ -1810,9 +1810,9 @@ def parse_mutaTox_stat(vega_json, test_json, index):
 				stat["source"] = "VEGA & TEST"
 			else:
 				stat["source"] = "VEGA"
-			stat["num_p"] = mutaTox_est_pos
-			stat["num_n"] = mutaTox_est_neg
-			stat["num_nc"] = mutaTox_est_nonclass
+			stat["numP"] = mutaTox_est_pos
+			stat["numN"] = mutaTox_est_neg
+			stat["numNC"] = mutaTox_est_nonclass
 			stat["ss"] = mutaTox_vega_est_total + mutaTox_test_est_total
 			stat["note"] = "est moderate"
 			stat["unit"] = "N/A"
@@ -1839,9 +1839,9 @@ def parse_mutaTox_stat(vega_json, test_json, index):
 				stat["source"] = "VEGA & TEST"
 			else:
 				stat["source"] = "VEGA"
-			stat["num_p"] = mutaTox_est_pos
-			stat["num_n"] = mutaTox_est_neg
-			stat["num_nc"] = mutaTox_est_nonclass
+			stat["numP"] = mutaTox_est_pos
+			stat["numN"] = mutaTox_est_neg
+			stat["numNC"] = mutaTox_est_nonclass
 			stat["ss"] = mutaTox_vega_est_total + mutaTox_test_est_total
 			stat["note"] = "est low"
 			stat["unit"] = "N/A"
@@ -1854,9 +1854,9 @@ def parse_mutaTox_stat(vega_json, test_json, index):
 			return stat
 		elif mutaTox_test_est_total != 0:
 			stat["source"] = "TEST"
-			stat["num_p"] = mutaTox_test_est_pos
-			stat["num_n"] = mutaTox_test_est_neg
-			stat["num_nc"] = mutaTox_test_est_nonclass
+			stat["numP"] = mutaTox_test_est_pos
+			stat["numN"] = mutaTox_test_est_neg
+			stat["numNC"] = mutaTox_test_est_nonclass
 			stat["ss"] = mutaTox_test_est_total
 			stat["note"] = "est"
 			stat["unit"] = "N/A"
@@ -1867,9 +1867,9 @@ def parse_mutaTox_stat(vega_json, test_json, index):
 			return stat
 		else:	# all N/A
 			stat["source"] = "VEGA & TEST"
-			stat["num_p"] = 0
-			stat["num_n"] = 0
-			stat["num_nc"] = 0
+			stat["numP"] = 0
+			stat["numN"] = 0
+			stat["numNC"] = 0
 			stat["ss"] = 0
 			stat["note"] = "N/A"
 			stat["unit"] = "N/A"
@@ -1902,9 +1902,9 @@ def parse_carciTox_stat(vega_json, index):
 	carciTox_vega_exp_total = carciTox_vega_exp_pos + carciTox_vega_exp_neg + carciTox_vega_exp_nonclass 
 	if carciTox_vega_exp_total > 0:
 		stat["source"] = "VEGA"
-		stat["num_p"] = carciTox_vega_exp_pos
-		stat["num_n"] = carciTox_vega_exp_neg
-		stat["num_nc"] = carciTox_vega_exp_nonclass
+		stat["numP"] = carciTox_vega_exp_pos
+		stat["numN"] = carciTox_vega_exp_neg
+		stat["numNC"] = carciTox_vega_exp_nonclass
 		stat["ss"] = carciTox_vega_exp_total
 		stat["note"] = "exp"
 		stat["unit"] = "N/A"
@@ -1946,9 +1946,9 @@ def parse_carciTox_stat(vega_json, index):
 			carciTox_est_pos = carciTox_vega_est_pos
 			carciTox_est_neg = carciTox_vega_est_neg
 			stat["source"] = "VEGA"
-			stat["num_p"] = carciTox_est_pos
-			stat["num_n"] = carciTox_est_neg
-			stat["num_nc"] = carciTox_vega_est_nonclass
+			stat["numP"] = carciTox_est_pos
+			stat["numN"] = carciTox_est_neg
+			stat["numNC"] = carciTox_vega_est_nonclass
 			stat["ss"] = carciTox_vega_est_total
 			stat["note"] = "est good"
 			stat["unit"] = "N/A"
@@ -1970,9 +1970,9 @@ def parse_carciTox_stat(vega_json, index):
 			carciTox_est_neg = carciTox_vega_est_neg
 			carciTox_est_nonclass = carciTox_vega_est_nonclass
 			stat["source"] = "VEGA"
-			stat["num_p"] = carciTox_est_pos
-			stat["num_n"] = carciTox_est_neg
-			stat["num_nc"] = carciTox_est_nonclass
+			stat["numP"] = carciTox_est_pos
+			stat["numN"] = carciTox_est_neg
+			stat["numNC"] = carciTox_est_nonclass
 			stat["ss"] = carciTox_vega_est_total
 			stat["note"] = "est moderate"
 			stat["unit"] = "N/A"
@@ -1996,9 +1996,9 @@ def parse_carciTox_stat(vega_json, index):
 			carciTox_est_neg = carciTox_vega_est_neg
 			carciTox_est_nonclass = carciTox_vega_est_nonclass
 			stat["source"] = "VEGA"
-			stat["num_p"] = carciTox_est_pos
-			stat["num_n"] = carciTox_est_neg
-			stat["num_nc"] = carciTox_est_nonclass
+			stat["numP"] = carciTox_est_pos
+			stat["numN"] = carciTox_est_neg
+			stat["numNC"] = carciTox_est_nonclass
 			stat["ss"] = carciTox_vega_est_total
 			stat["note"] = "est low"
 			stat["unit"] = "N/A"
@@ -2011,9 +2011,9 @@ def parse_carciTox_stat(vega_json, index):
 			return stat
 		else:	# all N/A
 			stat["source"] = "VEGA"
-			stat["num_p"] = 0
-			stat["num_n"] = 0
-			stat["num_nc"] = 0
+			stat["numP"] = 0
+			stat["numN"] = 0
+			stat["numNC"] = 0
 			stat["ss"] = 0
 			stat["note"] = "N/A"
 			stat["unit"] = "N/A"
@@ -2062,9 +2062,9 @@ def parse_deveTox_stat(vega_json, test_json, index):
 			stat["source"] = "TEST"
 		else:
 			stat["source"] = "VEGA"
-		stat["num_p"] = deveTox_exp_pos
-		stat["num_n"] = deveTox_exp_neg
-		stat["num_nc"] = deveTox_exp_nonclass
+		stat["numP"] = deveTox_exp_pos
+		stat["numN"] = deveTox_exp_neg
+		stat["numNC"] = deveTox_exp_nonclass
 		stat["ss"] = deveTox_vega_exp_total + deveTox_test_exp_total
 		stat["note"] = "exp"
 		stat["unit"] = "N/A"
@@ -2116,9 +2116,9 @@ def parse_deveTox_stat(vega_json, test_json, index):
 				stat["source"] = "VEGA & TEST"
 			else:
 				stat["source"] = "VEGA"
-			stat["num_p"] = deveTox_est_pos
-			stat["num_n"] = deveTox_est_neg
-			stat["num_nc"] = deveTox_test_est_nonclass + deveTox_vega_est_nonclass
+			stat["numP"] = deveTox_est_pos
+			stat["numN"] = deveTox_est_neg
+			stat["numNC"] = deveTox_test_est_nonclass + deveTox_vega_est_nonclass
 			stat["ss"] = deveTox_vega_est_total + deveTox_test_est_total
 			stat["note"] = "est good"
 			stat["unit"] = "N/A"
@@ -2143,9 +2143,9 @@ def parse_deveTox_stat(vega_json, test_json, index):
 				stat["source"] = "VEGA & TEST"
 			else:
 				stat["source"] = "VEGA"
-			stat["num_p"] = deveTox_est_pos
-			stat["num_n"] = deveTox_est_neg
-			stat["num_nc"] = deveTox_est_nonclass
+			stat["numP"] = deveTox_est_pos
+			stat["numN"] = deveTox_est_neg
+			stat["numNC"] = deveTox_est_nonclass
 			stat["ss"] = deveTox_vega_est_total + deveTox_test_est_total
 			stat["note"] = "est moderate"
 			stat["unit"] = "N/A"
@@ -2172,9 +2172,9 @@ def parse_deveTox_stat(vega_json, test_json, index):
 				stat["source"] = "VEGA & TEST"
 			else:
 				stat["source"] = "VEGA"
-			stat["num_p"] = deveTox_est_pos
-			stat["num_n"] = deveTox_est_neg
-			stat["num_nc"] = deveTox_est_nonclass
+			stat["numP"] = deveTox_est_pos
+			stat["numN"] = deveTox_est_neg
+			stat["numNC"] = deveTox_est_nonclass
 			stat["ss"] = deveTox_vega_est_total + deveTox_test_est_total
 			stat["note"] = "est low"
 			stat["unit"] = "N/A"
@@ -2187,9 +2187,9 @@ def parse_deveTox_stat(vega_json, test_json, index):
 			return stat
 		elif deveTox_test_est_total != 0:
 			stat["source"] = "TEST"
-			stat["num_p"] = deveTox_test_est_pos
-			stat["num_n"] = deveTox_test_est_neg
-			stat["num_nc"] = deveTox_test_est_nonclass
+			stat["numP"] = deveTox_test_est_pos
+			stat["numN"] = deveTox_test_est_neg
+			stat["numNC"] = deveTox_test_est_nonclass
 			stat["ss"] = deveTox_test_est_total
 			stat["note"] = "est"
 			stat["unit"] = "N/A"
@@ -2200,9 +2200,9 @@ def parse_deveTox_stat(vega_json, test_json, index):
 			return stat
 		else:	# all N/A
 			stat["source"] = "VEGA & TEST"
-			stat["num_p"] = 0
-			stat["num_n"] = 0
-			stat["num_nc"] = 0
+			stat["numP"] = 0
+			stat["numN"] = 0
+			stat["numNC"] = 0
 			stat["ss"] = 0
 			stat["note"] = "N/A"
 			stat["unit"] = "N/A"
@@ -2233,9 +2233,9 @@ def parse_ER_stat(vega_json, index):
 	ER_vega_exp_total = ER_vega_exp_pos + ER_vega_exp_neg + ER_vega_exp_nonclass 
 	if ER_vega_exp_total > 0:
 		stat["source"] = "VEGA"
-		stat["num_p"] = ER_vega_exp_pos
-		stat["num_n"] = ER_vega_exp_neg
-		stat["num_nc"] = ER_vega_exp_nonclass
+		stat["numP"] = ER_vega_exp_pos
+		stat["numN"] = ER_vega_exp_neg
+		stat["numNC"] = ER_vega_exp_nonclass
 		stat["ss"] = ER_vega_exp_total
 		stat["note"] = "exp"
 		stat["unit"] = "N/A"
@@ -2275,9 +2275,9 @@ def parse_ER_stat(vega_json, index):
 			ER_est_pos = ER_vega_est_pos
 			ER_est_neg = ER_vega_est_neg
 			stat["source"] = "VEGA"
-			stat["num_p"] = ER_est_pos
-			stat["num_n"] = ER_est_neg
-			stat["num_nc"] = ER_vega_est_nonclass
+			stat["numP"] = ER_est_pos
+			stat["numN"] = ER_est_neg
+			stat["numNC"] = ER_vega_est_nonclass
 			stat["ss"] = ER_vega_est_total
 			stat["note"] = "est good"
 			stat["unit"] = "N/A"
@@ -2299,9 +2299,9 @@ def parse_ER_stat(vega_json, index):
 			ER_est_neg = ER_vega_est_neg
 			ER_est_nonclass = ER_vega_est_nonclass
 			stat["source"] = "VEGA"
-			stat["num_p"] = ER_est_pos
-			stat["num_n"] = ER_est_neg
-			stat["num_nc"] = ER_est_nonclass
+			stat["numP"] = ER_est_pos
+			stat["numN"] = ER_est_neg
+			stat["numNC"] = ER_est_nonclass
 			stat["ss"] = ER_vega_est_total
 			stat["note"] = "est moderate"
 			stat["unit"] = "N/A"
@@ -2325,9 +2325,9 @@ def parse_ER_stat(vega_json, index):
 			ER_est_neg = ER_vega_est_neg
 			ER_est_nonclass = ER_vega_est_nonclass
 			stat["source"] = "VEGA"
-			stat["num_p"] = ER_est_pos
-			stat["num_n"] = ER_est_neg
-			stat["num_nc"] = ER_est_nonclass
+			stat["numP"] = ER_est_pos
+			stat["numN"] = ER_est_neg
+			stat["numNC"] = ER_est_nonclass
 			stat["ss"] = ER_vega_est_total
 			stat["note"] = "est low"
 			stat["unit"] = "N/A"
@@ -2340,9 +2340,9 @@ def parse_ER_stat(vega_json, index):
 			return stat
 		else:	# all N/A
 			stat["source"] = "VEGA"
-			stat["num_p"] = 0
-			stat["num_n"] = 0
-			stat["num_nc"] = 0
+			stat["numP"] = 0
+			stat["numN"] = 0
+			stat["numNC"] = 0
 			stat["ss"] = 0
 			stat["note"] = "N/A"
 			stat["unit"] = "N/A"
@@ -2372,9 +2372,9 @@ def parse_skinSensi_stat(vega_json, index):
 	skinSensi_vega_exp_total = skinSensi_vega_exp_pos + skinSensi_vega_exp_neg + skinSensi_vega_exp_nonclass 
 	if skinSensi_vega_exp_total > 0:
 		stat["source"] = "VEGA"
-		stat["num_p"] = skinSensi_vega_exp_pos
-		stat["num_n"] = skinSensi_vega_exp_neg
-		stat["num_nc"] = skinSensi_vega_exp_nonclass
+		stat["numP"] = skinSensi_vega_exp_pos
+		stat["numN"] = skinSensi_vega_exp_neg
+		stat["numNC"] = skinSensi_vega_exp_nonclass
 		stat["ss"] = skinSensi_vega_exp_total
 		stat["note"] = "exp"
 		stat["unit"] = "N/A"
@@ -2413,9 +2413,9 @@ def parse_skinSensi_stat(vega_json, index):
 			skinSensi_est_pos = skinSensi_vega_est_pos
 			skinSensi_est_neg = skinSensi_vega_est_neg
 			stat["source"] = "VEGA"
-			stat["num_p"] = skinSensi_est_pos
-			stat["num_n"] = skinSensi_est_neg
-			stat["num_nc"] = skinSensi_vega_est_nonclass
+			stat["numP"] = skinSensi_est_pos
+			stat["numN"] = skinSensi_est_neg
+			stat["numNC"] = skinSensi_vega_est_nonclass
 			stat["ss"] = skinSensi_vega_est_total
 			stat["note"] = "est good"
 			stat["unit"] = "N/A"
@@ -2437,9 +2437,9 @@ def parse_skinSensi_stat(vega_json, index):
 			skinSensi_est_neg = skinSensi_vega_est_neg
 			skinSensi_est_nonclass = skinSensi_vega_est_nonclass
 			stat["source"] = "VEGA"
-			stat["num_p"] = skinSensi_est_pos
-			stat["num_n"] = skinSensi_est_neg
-			stat["num_nc"] = skinSensi_est_nonclass
+			stat["numP"] = skinSensi_est_pos
+			stat["numN"] = skinSensi_est_neg
+			stat["numNC"] = skinSensi_est_nonclass
 			stat["ss"] = skinSensi_vega_est_total
 			stat["note"] = "est moderate"
 			stat["unit"] = "N/A"
@@ -2463,9 +2463,9 @@ def parse_skinSensi_stat(vega_json, index):
 			skinSensi_est_neg = skinSensi_vega_est_neg
 			skinSensi_est_nonclass = skinSensi_vega_est_nonclass
 			stat["source"] = "VEGA"
-			stat["num_p"] = skinSensi_est_pos
-			stat["num_n"] = skinSensi_est_neg
-			stat["num_nc"] = skinSensi_est_nonclass
+			stat["numP"] = skinSensi_est_pos
+			stat["numN"] = skinSensi_est_neg
+			stat["numNC"] = skinSensi_est_nonclass
 			stat["ss"] = skinSensi_vega_est_total
 			stat["note"] = "est low"
 			stat["unit"] = "N/A"
@@ -2478,9 +2478,9 @@ def parse_skinSensi_stat(vega_json, index):
 			return stat
 		else:	# all N/A
 			stat["source"] = "VEGA"
-			stat["num_p"] = 0
-			stat["num_n"] = 0
-			stat["num_nc"] = 0
+			stat["numP"] = 0
+			stat["numN"] = 0
+			stat["numNC"] = 0
 			stat["ss"] = 0
 			stat["note"] = "N/A"
 			stat["unit"] = "N/A"
@@ -2517,7 +2517,7 @@ def getStat(valueList, note, source, unit):
 						"min":"N/A",
 						"max":"N/A",
 						"ss":len(valueList),
-						"sd":0,
+						"std":0,
 						"note":note,
 						"source":source,
 						"unit": unit}
@@ -2530,13 +2530,13 @@ def getStat(valueList, note, source, unit):
 	stat["min"] = min(valueList)
 	stat["max"] = max(valueList)
 	stat["ss"] = len(valueList)
-	stat["sd"] = np.std(valueList)
+	stat["std"] = np.std(valueList)
 	stat["note"] = note
 	stat["source"] = source
 	stat["unit"] = unit
 
 	if stat["ss"]==1:
-		stat["sd"]="N/A"
+		stat["std"]="N/A"
 	return stat
 
 
