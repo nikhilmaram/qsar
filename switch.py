@@ -445,6 +445,10 @@ def restart_episuite():
     os.system("cd ~/.wine/drive_c/EPISUITE41; wine EpiWeb1.exe&")
     time.sleep(3)
 
+
+MD5_SPLIT = 4
+MD5_LENGTH = 32
+
 # smile: string, epi,vega,test: boolean, 
 def switch(smiles,epi,vega,test,test_opt="1",
            epi_batch_path="None",vega_batch_path="None",test_batch_path="None"):
@@ -465,7 +469,22 @@ def switch(smiles,epi,vega,test,test_opt="1",
     # create temporary directory for current smiles
     # TEMP_DIR_PATH: runtime temp files
     # RESULT_JSON_FOLDER: 1. json for each model 2. combined json
-    TEMP_DIR_PATH = os.path.join(DIR_PATH,'history',SMILES_MD5)
+
+    ## Need to change the temp directory path in order to create a hierarchy structure
+    HISTORY_DIR_PATH = os.path.join(DIR_PATH,'history')
+    
+    chunk_size = MD5_LENGTH/MD5_SPLIT
+    curr_path = HISTORY_DIR_PATH
+
+    for i in range(chunk_size):
+        start_index = i*MD5_SPLIT
+        folder_name = SMILES_MD5[start_index : start_index+MD5_SPLIT]
+        curr_path = os.path.join(curr_path,folder_name)
+        make_dir_if_necessary(curr_path)
+
+    TEMP_DIR_PATH = curr_path
+    
+    ###TEMP_DIR_PATH = os.path.join(HISTORY_DIR_PATH,SMILES_MD5_DICT[smiles])
     print('temp:',TEMP_DIR_PATH)
     print(SMILES_MD5,smiles)
     make_dir_if_necessary(TEMP_DIR_PATH)
