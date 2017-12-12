@@ -19,6 +19,8 @@ import hashlib, psutil
 from episuite_file.parse_episuite import read_epi_result_toJson
 from vega_file.parse_vega import read_vega_result_toJSON
 from test_file.Call_TEST import TEST_batch_allEndpoints, readTESTResult
+import multiprocessing
+
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -630,22 +632,44 @@ if __name__ == '__main__':
 
     # production
     if len(sys.argv) == 5:
-        switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt="1")
+        ###switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt="1")
+        p = multiprocessing.Process(target = switch,name="switch",args=(sys.argv[1],eval(sys.argv[2]),eval(sys.argv[3]),eval(sys.argv[4]),"1"))
     
     if len(sys.argv) == 6:
-        switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt=sys.argv[5])
+        ###switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt=sys.argv[5])
+        p = multiprocessing.Process(target= switch,name = "switch",args =(sys.argv[1],eval(sys.argv[2]),eval(sys.argv[3]),eval(sys.argv[4]),sys.argv[5]))
     
     if len(sys.argv) == 7:
-        switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt=sys.argv[5],
-               epi_batch_path=sys.argv[6],vega_batch_path=None,test_batch_path=None)
+        ###switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt=sys.argv[5],
+        ###       epi_batch_path=sys.argv[6],vega_batch_path=None,test_batch_path=None)
+        p = multiprocessing.Process(target= switch,name = "switch",args =(sys.argv[1],eval(sys.argv[2]),eval(sys.argv[3]),eval(sys.argv[4]),sys.argv[5],sys.argv[6],None,None))
 
     if len(sys.argv) == 8:
-        switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt=sys.argv[5],
-               epi_batch_path=sys.argv[6],vega_batch_path=sys.argv[7],test_batch_path=None)
+        ###switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt=sys.argv[5],
+        ###       epi_batch_path=sys.argv[6],vega_batch_path=sys.argv[7],test_batch_path=None)
+        print("Theere are 8 arguments")
+        p = multiprocessing.Process(target= switch,name = "switch",args =(sys.argv[1],eval(sys.argv[2]),eval(sys.argv[3]),eval(sys.argv[4]),sys.argv[5],sys.argv[6],sys.argv[7],None))
 
     if len(sys.argv) == 9:
-        switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt=sys.argv[5],
-               epi_batch_path=sys.argv[6],vega_batch_path=sys.argv[7],test_batch_path=sys.argv[8])
+        ###switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt=sys.argv[5],
+        ###       epi_batch_path=sys.argv[6],vega_batch_path=sys.argv[7],test_batch_path=sys.argv[8])
+        print("Theere are 9 arguments")
+        p = multiprocessing.Process(target= switch,name = "switch",args = (sys.argv[1],eval(sys.argv[2]),eval(sys.argv[3]),eval(sys.argv[4]),sys.argv[5],sys.argv[6],sys.argv[7],sys.argv[8]))
+
+    if len(sys.argv) == 10:
+        ###switch(sys.argv[1],epi=eval(sys.argv[2]),vega=eval(sys.argv[3]),test=eval(sys.argv[4]),test_opt=sys.argv[5],
+        ###       epi_batch_path=sys.argv[6],vega_batch_path=sys.argv[7],test_batch_path=sys.argv[8])
+        print("Theere are 10  arguments")
+        p = multiprocessing.Process(target= switch,name = "switch",args = (sys.argv[1],eval(sys.argv[2]),eval(sys.argv[3]),eval(sys.argv[4]),sys.argv[5],sys.argv[6],sys.argv[7],sys.argv[8]))
+
+
+    p.start()
+    ##time.sleep(float(sys.argv[9]))
+    time.sleep(250)
+    if p.is_alive():
+        print("Process is still alive")
+        p.terminate()
+    p.join()
         # python switch.py CC False True False
     #switch("CC",False,True,False,test_opt)
     #switch("C(Cl)Cl",True,False,False,test_opt)
